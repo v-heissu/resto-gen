@@ -4,394 +4,118 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Restaurant Text Pipeline</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🍽</text></svg>" />
 <style>
   @import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&family=JetBrains+Mono:wght@400;500&display=swap');
+  *{margin:0;padding:0;box-sizing:border-box}
+  :root{--bg:#0f1117;--surface:#181b24;--surface2:#1f2330;--border:#2a2e3a;--text:#e4e6ed;--text2:#9499a8;--accent:#c8a46e;--accent-dim:#a0834a;--green:#4ade80;--red:#f87171;--amber:#fbbf24;--radius:10px}
+  body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);line-height:1.6;min-height:100vh}
 
-  * { margin: 0; padding: 0; box-sizing: border-box; }
+  /* HEADER */
+  .app-header{border-bottom:1px solid var(--border);background:linear-gradient(180deg,#14161e 0%,var(--bg) 100%)}
+  .header-inner{max-width:960px;margin:0 auto;padding:28px 24px 20px}
+  .header-top{display:flex;justify-content:space-between;align-items:center}
+  .header-left h1{font-size:22px;font-weight:600;letter-spacing:-0.02em;color:var(--accent)}
+  .header-sub{color:var(--text2);font-size:13px;margin-top:2px;font-family:'JetBrains Mono',monospace}
+  .model-sel{background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:6px 28px 6px 10px;color:var(--text);font-family:'JetBrains Mono',monospace;font-size:12px;outline:none;appearance:none;-webkit-appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 12 12'%3E%3Cpath fill='%239499a8' d='M6 8L1 3h10z'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 8px center;cursor:pointer}
 
-  :root {
-    --bg: #0f1117;
-    --surface: #181b24;
-    --surface2: #1f2330;
-    --border: #2a2e3a;
-    --text: #e4e6ed;
-    --text2: #9499a8;
-    --accent: #c8a46e;
-    --accent-dim: #a0834a;
-    --green: #4ade80;
-    --red: #f87171;
-    --amber: #fbbf24;
-    --radius: 10px;
-  }
+  /* LANGUAGE SELECTOR */
+  .lang-bar{margin-top:16px;display:flex;gap:6px;flex-wrap:wrap}
+  .lang-btn{display:flex;align-items:center;gap:8px;background:var(--surface2);border:2px solid var(--border);border-radius:8px;padding:8px 16px;cursor:pointer;transition:all .2s;color:var(--text2);font-family:'DM Sans',sans-serif;font-size:14px;font-weight:500}
+  .lang-btn:hover{border-color:var(--accent-dim);color:var(--text)}
+  .lang-btn.active{border-color:var(--accent);background:rgba(200,164,110,0.1);color:var(--accent)}
+  .lang-flag{font-size:24px;line-height:1}
+  .lang-label{font-size:12px;font-family:'JetBrains Mono',monospace;letter-spacing:.03em}
 
-  body {
-    font-family: 'DM Sans', sans-serif;
-    background: var(--bg);
-    color: var(--text);
-    line-height: 1.6;
-    min-height: 100vh;
-  }
-
-  .app-header {
-    border-bottom: 1px solid var(--border);
-    background: linear-gradient(180deg, #14161e 0%, var(--bg) 100%);
-  }
-  .header-inner {
-    max-width: 960px;
-    margin: 0 auto;
-    padding: 32px 24px 24px;
-  }
-  .app-header h1 {
-    font-size: 22px;
-    font-weight: 600;
-    letter-spacing: -0.02em;
-    color: var(--accent);
-  }
-  .header-sub {
-    color: var(--text2);
-    font-size: 14px;
-    margin-top: 4px;
-    font-family: 'JetBrains Mono', monospace;
-  }
-
-  .main-content {
-    max-width: 960px;
-    margin: 0 auto;
-    padding: 24px;
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
-  }
-
-  .card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    padding: 20px;
-  }
-
-  .config-row {
-    display: flex;
-    gap: 12px;
-  }
-  @media (max-width: 600px) {
-    .config-row { flex-direction: column; }
-  }
-
-  .field { display: flex; flex-direction: column; gap: 4px; flex: 1; }
-  .field label {
-    font-size: 12px;
-    font-weight: 500;
-    color: var(--text2);
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-  }
-
-  .input, .textarea {
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    border-radius: 6px;
-    padding: 10px 12px;
-    color: var(--text);
-    font-family: inherit;
-    font-size: 14px;
-    outline: none;
-    transition: border-color 0.2s;
-    width: 100%;
-  }
-  .input:focus, .textarea:focus {
-    border-color: var(--accent-dim);
-  }
-  select.input {
-    cursor: pointer;
-    appearance: none;
-    -webkit-appearance: none;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%239499a8' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
-    background-repeat: no-repeat;
-    background-position: right 12px center;
-    padding-right: 32px;
-  }
-
-  .textarea { resize: vertical; }
-  .prompt-textarea {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 12px;
-    line-height: 1.7;
-  }
-
-  .prompts-editor {
-    margin-top: 12px;
-    display: none;
-    flex-direction: column;
-    gap: 16px;
-  }
-  .prompts-editor.open { display: flex; }
-  .prompt-block label {
-    font-size: 13px;
-    font-weight: 500;
-    color: var(--accent);
-    margin-bottom: 4px;
-    display: block;
-  }
-
-  .tab-row {
-    display: flex;
-    margin-bottom: 16px;
-    border-bottom: 1px solid var(--border);
-  }
-  .tab-btn {
-    background: none;
-    border: none;
-    color: var(--text2);
-    font-family: inherit;
-    font-size: 14px;
-    padding: 8px 16px;
-    cursor: pointer;
-    border-bottom: 2px solid transparent;
-    transition: all 0.2s;
-  }
-  .tab-btn:hover { color: var(--text); }
-  .tab-active {
-    color: var(--accent) !important;
-    border-bottom-color: var(--accent) !important;
-  }
-
-  .form-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-    gap: 12px;
-    margin-bottom: 12px;
-  }
-
-  .hint {
-    font-size: 12px;
-    color: var(--text2);
-    margin-bottom: 8px;
-    font-family: 'JetBrains Mono', monospace;
-  }
-
-  .action-row {
-    display: flex;
-    gap: 10px;
-    align-items: center;
-    margin-top: 16px;
-    flex-wrap: wrap;
-  }
-
-  .btn {
-    font-family: inherit;
-    font-size: 14px;
-    font-weight: 500;
-    border: none;
-    border-radius: 6px;
-    padding: 10px 20px;
-    cursor: pointer;
-    transition: all 0.15s;
-  }
-  .btn:disabled { opacity: 0.4; cursor: not-allowed; }
-  .btn-primary { background: var(--accent); color: #0f1117; }
-  .btn-primary:hover:not(:disabled) { background: #d4b07a; }
-  .btn-danger { background: #dc2626; color: white; }
-  .btn-danger:hover { background: #ef4444; }
-  .btn-ghost { background: transparent; color: var(--text2); border: 1px solid var(--border); }
-  .btn-ghost:hover { color: var(--text); border-color: var(--text2); }
-  .btn-sm { padding: 6px 12px; font-size: 12px; }
-
-  .progress-text {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 13px;
-    color: var(--text2);
-  }
-
-  #results-section { display: none; }
-  #results-section.visible { display: block; }
-  #results-section h2 {
-    font-size: 16px;
-    font-weight: 500;
-    color: var(--text2);
-    margin-bottom: 12px;
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
-  }
-
-  .result-card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    margin-bottom: 8px;
-    overflow: hidden;
-  }
-  .result-error { border-color: #7f1d1d; }
-
-  .result-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 14px 18px;
-    cursor: pointer;
-    gap: 12px;
-  }
-  .result-header:hover { background: var(--surface2); }
-
-  .result-title {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    min-width: 0;
-  }
-  .result-title strong {
-    font-size: 15px;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-  .result-id {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 11px;
-    color: var(--text2);
-    background: var(--surface2);
-    padding: 2px 8px;
-    border-radius: 4px;
-  }
-
-  .step-indicators {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    flex-shrink: 0;
-  }
-  .step-pill {
-    display: flex;
-    align-items: center;
-    gap: 4px;
-    font-size: 12px;
-    color: var(--text2);
-    font-family: 'JetBrains Mono', monospace;
-  }
-
-  .fc-badge {
-    font-size: 11px;
-    font-weight: 600;
-    padding: 2px 8px;
-    border-radius: 4px;
-    font-family: 'JetBrains Mono', monospace;
-  }
-  .fc-pass { background: #14532d; color: #4ade80; }
-  .fc-warn { background: #78350f; color: #fbbf24; }
-
-  .result-body {
-    padding: 0 18px 18px;
-    border-top: 1px solid var(--border);
-    display: none;
-  }
-  .result-body.open { display: block; }
-
-  .error-box {
-    background: #1c0a0a;
-    border: 1px solid #7f1d1d;
-    border-radius: 6px;
-    padding: 10px 14px;
-    font-size: 13px;
-    color: var(--red);
-    margin-top: 12px;
-  }
-
-  .text-section { margin-top: 16px; }
-  .text-section h4 {
-    font-size: 12px;
-    font-weight: 500;
-    color: var(--accent);
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    margin-bottom: 8px;
-  }
-  .text-content {
-    font-size: 14px;
-    line-height: 1.75;
-    white-space: pre-wrap;
-    background: var(--surface2);
-    padding: 16px;
-    border-radius: 8px;
-    border: 1px solid var(--border);
-  }
-  .text-muted { color: var(--text2); font-size: 13px; }
-
-  .fc-detail {
-    background: var(--surface2);
-    padding: 14px;
-    border-radius: 8px;
-    border: 1px solid var(--border);
-    font-size: 14px;
-  }
-  .fc-detail p { margin-top: 6px; color: var(--text2); font-size: 13px; }
-
-  .text-green { color: var(--green); }
-  .text-amber { color: var(--amber); }
-
-  .spinner {
-    display: inline-block;
-    width: 16px;
-    height: 16px;
-    border: 2px solid var(--border);
-    border-top-color: var(--accent);
-    border-radius: 50%;
-    animation: spin 0.7s linear infinite;
-    vertical-align: middle;
-  }
-  @keyframes spin { to { transform: rotate(360deg); } }
-
-  .hidden { display: none !important; }
-  #single-form, #batch-form { display: none; }
-  #single-form.active, #batch-form.active { display: block; }
+  /* MAIN */
+  .main-content{max-width:960px;margin:0 auto;padding:24px;display:flex;flex-direction:column;gap:20px}
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:20px}
+  .field{display:flex;flex-direction:column;gap:4px;flex:1}
+  .field label{font-size:12px;font-weight:500;color:var(--text2);text-transform:uppercase;letter-spacing:.05em}
+  .input,.textarea{background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:10px 12px;color:var(--text);font-family:inherit;font-size:14px;outline:none;transition:border-color .2s;width:100%}
+  .input:focus,.textarea:focus{border-color:var(--accent-dim)}
+  .textarea{resize:vertical}.prompt-textarea{font-family:'JetBrains Mono',monospace;font-size:12px;line-height:1.7}
+  .prompts-editor{margin-top:12px;display:none;flex-direction:column;gap:16px}.prompts-editor.open{display:flex}
+  .prompt-block label{font-size:13px;font-weight:500;color:var(--accent);margin-bottom:4px;display:block}
+  .tab-row{display:flex;margin-bottom:16px;border-bottom:1px solid var(--border)}
+  .tab-btn{background:none;border:none;color:var(--text2);font-family:inherit;font-size:14px;padding:8px 16px;cursor:pointer;border-bottom:2px solid transparent;transition:all .2s}
+  .tab-btn:hover{color:var(--text)}.tab-active{color:var(--accent)!important;border-bottom-color:var(--accent)!important}
+  .form-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px;margin-bottom:12px}
+  .hint{font-size:12px;color:var(--text2);margin-bottom:8px;font-family:'JetBrains Mono',monospace}
+  .action-row{display:flex;gap:10px;align-items:center;margin-top:16px;flex-wrap:wrap}
+  .btn{font-family:inherit;font-size:14px;font-weight:500;border:none;border-radius:6px;padding:10px 20px;cursor:pointer;transition:all .15s}
+  .btn:disabled{opacity:.4;cursor:not-allowed}
+  .btn-primary{background:var(--accent);color:#0f1117}.btn-primary:hover:not(:disabled){background:#d4b07a}
+  .btn-danger{background:#dc2626;color:#fff}.btn-danger:hover{background:#ef4444}
+  .btn-ghost{background:transparent;color:var(--text2);border:1px solid var(--border)}.btn-ghost:hover{color:var(--text);border-color:var(--text2)}
+  .btn-sm{padding:6px 12px;font-size:12px}
+  .progress-text{font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--text2)}
+  #results-section{display:none}#results-section.visible{display:block}
+  #results-section h2{font-size:16px;font-weight:500;color:var(--text2);margin-bottom:12px;text-transform:uppercase;letter-spacing:.06em}
+  .result-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);margin-bottom:8px;overflow:hidden}
+  .result-error{border-color:#7f1d1d}
+  .result-header{display:flex;justify-content:space-between;align-items:center;padding:14px 18px;cursor:pointer;gap:12px}
+  .result-header:hover{background:var(--surface2)}
+  .result-title{display:flex;align-items:center;gap:10px;min-width:0}
+  .result-title strong{font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .result-id{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text2);background:var(--surface2);padding:2px 8px;border-radius:4px}
+  .step-indicators{display:flex;align-items:center;gap:12px;flex-shrink:0}
+  .step-pill{display:flex;align-items:center;gap:4px;font-size:12px;color:var(--text2);font-family:'JetBrains Mono',monospace}
+  .fc-badge{font-size:11px;font-weight:600;padding:2px 8px;border-radius:4px;font-family:'JetBrains Mono',monospace}
+  .fc-pass{background:#14532d;color:#4ade80}.fc-warn{background:#78350f;color:#fbbf24}
+  .result-body{padding:0 18px 18px;border-top:1px solid var(--border);display:none}.result-body.open{display:block}
+  .error-box{background:#1c0a0a;border:1px solid #7f1d1d;border-radius:6px;padding:10px 14px;font-size:13px;color:var(--red);margin-top:12px}
+  .text-section{margin-top:16px}
+  .text-section h4{font-size:12px;font-weight:500;color:var(--accent);text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px}
+  .text-content{font-size:14px;line-height:1.75;white-space:pre-wrap;background:var(--surface2);padding:16px;border-radius:8px;border:1px solid var(--border)}
+  .text-muted{color:var(--text2);font-size:13px}
+  .fc-detail{background:var(--surface2);padding:14px;border-radius:8px;border:1px solid var(--border);font-size:14px}
+  .fc-detail p{margin-top:6px;color:var(--text2);font-size:13px}
+  .text-green{color:var(--green)}.text-amber{color:var(--amber)}
+  .spinner{display:inline-block;width:16px;height:16px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite;vertical-align:middle}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  .hidden{display:none!important}
+  #single-form,#batch-form{display:none}#single-form.active,#batch-form.active{display:block}
+  @media(max-width:600px){.header-top{flex-direction:column;align-items:flex-start;gap:8px}.lang-bar{gap:4px}.lang-btn{padding:6px 10px}.lang-flag{font-size:20px}}
 </style>
 </head>
 <body>
-
 <header class="app-header">
   <div class="header-inner">
-    <h1>Restaurant Text Pipeline</h1>
-    <p class="header-sub">Generate → Quality Check → Fact Check</p>
+    <div class="header-top">
+      <div class="header-left">
+        <h1>Restaurant Text Pipeline</h1>
+        <p class="header-sub">Generate → Quality Check → Fact Check</p>
+      </div>
+      <select id="model" class="model-sel">
+        <option value="gpt-4.1">gpt-4.1</option>
+        <option value="gpt-4.1-mini">gpt-4.1-mini</option>
+        <option value="gpt-4.1-nano">gpt-4.1-nano</option>
+        <option value="gpt-4o">gpt-4o</option>
+        <option value="gpt-4o-mini">gpt-4o-mini</option>
+        <option value="gpt-5.2-chat-latest" selected>gpt-5.2-chat-latest</option>
+        <option value="gpt-5.2">gpt-5.2</option>
+      </select>
+    </div>
+    <div class="lang-bar">
+      <button class="lang-btn" data-lang="it" onclick="setLang('it')"><span class="lang-flag">🇮🇹</span><span class="lang-label">Italiano</span></button>
+      <button class="lang-btn active" data-lang="uk" onclick="setLang('uk')"><span class="lang-flag">🇬🇧</span><span class="lang-label">UK English</span></button>
+      <button class="lang-btn" data-lang="us" onclick="setLang('us')"><span class="lang-flag">🇺🇸</span><span class="lang-label">US English</span></button>
+      <button class="lang-btn" data-lang="fr" onclick="setLang('fr')"><span class="lang-flag">🇫🇷</span><span class="lang-label">Français</span></button>
+      <button class="lang-btn" data-lang="es" onclick="setLang('es')"><span class="lang-flag">🇪🇸</span><span class="lang-label">Español</span></button>
+    </div>
   </div>
 </header>
 
 <div class="main-content">
-  <!-- Config -->
+  <!-- Prompts editor -->
   <section class="card">
-    <div class="config-row">
-      <div class="field" style="flex:2">
-        <label>OpenAI API Key</label>
-        <input type="password" id="apiKey" class="input" placeholder="sk-..." />
-      </div>
-      <div class="field" style="flex:1">
-        <label>Model</label>
-        <select id="model" class="input">
-          <option value="gpt-4.1">gpt-4.1</option>
-          <option value="gpt-4.1-mini">gpt-4.1-mini</option>
-          <option value="gpt-4.1-nano">gpt-4.1-nano</option>
-          <option value="gpt-4o">gpt-4o</option>
-          <option value="gpt-4o-mini">gpt-4o-mini</option>
-          <option value="gpt-5.2-chat-latest" selected>gpt-5.2-chat-latest</option>
-          <option value="gpt-5.2">gpt-5.2</option>
-        </select>
-      </div>
-    </div>
-    <button class="btn btn-ghost" style="margin-top:8px" onclick="togglePrompts()">
-      <span id="prompt-toggle-label">▸ Edit Prompts</span>
-    </button>
+    <button class="btn btn-ghost" onclick="togglePrompts()"><span id="prompt-toggle-label">▸ Edit Prompts</span></button>
     <div id="prompts-editor" class="prompts-editor">
-      <div class="prompt-block">
-        <label>Step 1 — Generation</label>
-        <textarea id="prompt-gen" class="textarea prompt-textarea" rows="10"></textarea>
-      </div>
-      <div class="prompt-block">
-        <label>Step 2 — Quality Check</label>
-        <textarea id="prompt-qc" class="textarea prompt-textarea" rows="10"></textarea>
-      </div>
-      <div class="prompt-block">
-        <label>Step 3 — Fact Check</label>
-        <textarea id="prompt-fc" class="textarea prompt-textarea" rows="10"></textarea>
-      </div>
-      <button class="btn btn-ghost btn-sm" onclick="resetPrompts()">Reset to defaults</button>
+      <div class="prompt-block"><label>Step 1 — Generation</label><textarea id="prompt-gen" class="textarea prompt-textarea" rows="12"></textarea></div>
+      <div class="prompt-block"><label>Step 2 — Quality Check</label><textarea id="prompt-qc" class="textarea prompt-textarea" rows="10"></textarea></div>
+      <div class="prompt-block"><label>Step 3 — Fact Check</label><textarea id="prompt-fc" class="textarea prompt-textarea" rows="10"></textarea></div>
+      <button class="btn btn-ghost btn-sm" onclick="loadPromptsForLang(currentLang)">Reset to defaults</button>
     </div>
   </section>
 
@@ -401,32 +125,23 @@
       <button class="tab-btn tab-active" id="tab-single" onclick="switchTab('single')">Single Restaurant</button>
       <button class="tab-btn" id="tab-batch" onclick="switchTab('batch')">Batch (CSV)</button>
     </div>
-
     <div id="single-form" class="active">
       <div class="form-grid">
-        <div class="field"><label>ID</label><input id="f-_id" class="input" placeholder="ID" /></div>
-        <div class="field"><label>Restaurant Name</label><input id="f-name" class="input" placeholder="Name" /></div>
-        <div class="field"><label>Full Address</label><input id="f-address" class="input" placeholder="Address" /></div>
-        <div class="field"><label>Province/Region</label><input id="f-province" class="input" placeholder="Province" /></div>
-        <div class="field"><label>Chef</label><input id="f-chef" class="input" placeholder="Chef" /></div>
-        <div class="field"><label>Michelin Status</label><input id="f-michelin" class="input" placeholder="Michelin" /></div>
+        <div class="field"><label>ID</label><input id="f-_id" class="input" placeholder="ID"/></div>
+        <div class="field"><label>Restaurant Name</label><input id="f-name" class="input" placeholder="Name"/></div>
+        <div class="field"><label>Full Address</label><input id="f-address" class="input" placeholder="Address"/></div>
+        <div class="field"><label>Province/Region</label><input id="f-province" class="input" placeholder="Province"/></div>
+        <div class="field"><label>Chef</label><input id="f-chef" class="input" placeholder="Chef"/></div>
+        <div class="field"><label>Michelin Status</label><input id="f-michelin" class="input" placeholder="Michelin"/></div>
       </div>
-      <div class="field">
-        <label>Description</label>
-        <textarea id="f-description" class="textarea" rows="3" placeholder="Restaurant description..."></textarea>
-      </div>
-      <div class="field" style="margin-top:8px">
-        <label>Cuisines</label>
-        <input id="f-cuisines" class="input" placeholder="e.g. British Contemporary, Italian" />
-      </div>
+      <div class="field"><label>Description</label><textarea id="f-description" class="textarea" rows="3" placeholder="Restaurant description..."></textarea></div>
+      <div class="field" style="margin-top:8px"><label>Cuisines</label><input id="f-cuisines" class="input" placeholder="e.g. British Contemporary, Italian"/></div>
     </div>
-
     <div id="batch-form">
       <p class="hint">CSV with headers: _id, name, address, province, chef, michelin, description, cuisines</p>
       <textarea id="batch-csv" class="textarea" rows="8" placeholder="Paste CSV data here..."></textarea>
       <button class="btn btn-ghost btn-sm" style="margin-top:4px" onclick="loadSample()">Load sample data</button>
     </div>
-
     <div class="action-row">
       <button class="btn btn-primary" id="btn-run" onclick="startPipeline()">Run Pipeline</button>
       <button class="btn btn-danger hidden" id="btn-stop" onclick="stopPipeline()">Stop</button>
@@ -437,19 +152,18 @@
   </section>
 
   <!-- Results -->
-  <section id="results-section">
-    <h2>Results</h2>
-    <div id="results-list"></div>
-  </section>
+  <section id="results-section"><h2>Results</h2><div id="results-list"></div></section>
 </div>
 
 <script>
-// ─── Default Prompts ───
-const DEFAULT_PROMPTS = {
-  generation: `Write one 400-word introductory text for the following restaurant to be featured in a high-end gourmet industry online magazine targeting the UK market. The text should be well-written, SEO-friendly (without keyword stuffing), and must feel authentically crafted by a professional human copywriter.
+// ═══════════════════════════════════════════════════════════════
+// PROMPTS BY LANGUAGE
+// ═══════════════════════════════════════════════════════════════
+const LP={};
+
+LP.uk={generation:`Write one 400-word introductory text for the following restaurant to be featured in a high-end gourmet industry online magazine targeting the UK market. The text should be well-written, SEO-friendly (without keyword stuffing), and must feel authentically crafted by a professional human copywriter.
 
 Use ONLY the following VERIFIED DATA for the restaurant:
-
 Restaurant ID: {_id}
 Restaurant Name: {name}
 Address: {address}
@@ -462,70 +176,45 @@ Cuisines: {cuisines}
 Text must be:
 - Well-written, fluent, and natural, as if crafted by a native English copywriter.
 - SEO-optimized in a natural way — avoid keyword stuffing or repetitive phrasing.
-- Start with an engaging sentence that makes sense and sparks interest even if only the first 20–25 words are shown.
-
-Integrate the following elements smoothly into the narrative:
-- The exact restaurant name.
-- The chef's name, only if provided (do not assume or make it up).
-- Any verified Michelin Guide distinction (e.g., stars or Bib Gourmand).
-- The full address, including city, postal code, country, and region — but not at the beginning of the text.
-- The cuisine type, only if confirmed and verified (do not invent styles or influences).
-- Any signature dishes or recurring ingredients, but only if they are confirmed and accurate.
-
+- Start with an engaging sentence that sparks interest even if only the first 20–25 words are shown.
+Integrate smoothly: restaurant name, chef's name (only if provided), Michelin distinction, full address (not at beginning), cuisine type (if verified), signature dishes (if confirmed).
 Additional instructions:
-- Each text must include at least 5–6 distinct paragraphs.
-- Use a natural, conversational tone, suitable for a refined, food-savvy audience.
-- Avoid generic praise and impersonal expressions — focus instead on specific elements that make the restaurant unique.
-- Do not begin or end every article in the same way.
-- Do NOT open with phrases like "Located in…" or "Nestled in the heart of…", nor start with the address or geographical references.
-- Do NOT write about service or hospitality unless explicitly confirmed.
-- Vary sentence structure and vocabulary to avoid robotic or repetitive writing.
-- Do not use customer quotes or reviews.
-- Avoid template-like or overly similar article structures.
-- Maintain a neutral and sober tone — aim to describe excellence without "celebrating" the restaurant or chef.
-- Do not reference the magazine itself ("in this issue", "our selection", etc.).
-- Avoid overly explicit calls to action.
-- Include sensory descriptions (e.g. aromas, textures, colors of dishes) only if they are plausible and confirmed.
-- Describe ambiance and interior design only if such details are verified. If not, focus solely on the cuisine.
-- If the chef's style or philosophy is known and confirmed, include it without generalizing. Otherwise, omit.`,
+- At least 5–6 distinct paragraphs. Natural, conversational tone for a refined audience.
+- Avoid generic praise. Don't begin/end every article the same way.
+- Do NOT open with "Located in…" or "Nestled in…" or geographical references.
+- Do NOT write about service unless confirmed. Vary sentence structure and vocabulary.
+- No customer quotes. No template-like structures. Neutral and sober tone.
+- No magazine references. No explicit CTAs.
+- Sensory descriptions only if plausible and confirmed.
+- Ambiance/design only if verified. Chef's style only if known.`,
 
-  qualityCheck: `Please ensure the following quality standards are met for this restaurant text:
-
+qualityCheck:`Quality check for this restaurant text:
 Restaurant Name: {name}
-
 TEXT TO CHECK:
 {generated_text}
 
-Quality standards:
-- Use a natural and narrative tone that draws the reader in.
-- Include sensory details to describe the ambiance, decor, and dish presentation — but only if information is confirmed.
-- The text must be between 300 and 400 words.
-- Avoid generic praise — focus on specific, unique elements.
-- Vary how each article starts and ends.
-- Avoid AI-sounding phrases like "In conclusion", "To sum up", etc.
-- Do not start with phrases like "Located in…", "Nestled in…", or any direct geographical reference.
-- Do not mention restaurant service unless 100% confirmed.
-- Write for a high-end gastronomic audience: polished, not generic, and with a human touch.
-- Include only verified information — no assumptions or guesses.
-- Emphasize what makes each restaurant stand out, without referencing the magazine format.
-- The article must feel specific and genuine, not like a generic filler or AI-generated summary.
-- Subtly vary sentence structures and word choice to mimic natural human writing.
-- Do not include quotes or customer opinions.
-- Mention the chef's philosophy and iconic dishes only if they are confirmed — otherwise, omit.
-- Keep a refined, neutral tone — it's not a promotional or celebratory piece.
+Standards:
+- Natural narrative tone. Sensory details only if confirmed. 300-400 words.
+- No generic praise. Vary starts/ends. No AI phrases ("In conclusion" etc.).
+- No "Located in…" openings. No service details unless confirmed.
+- High-end gastronomic audience style. Only verified information.
+- Specific and genuine, not generic filler. Vary sentence structures.
+- No quotes/opinions. Chef philosophy only if confirmed. Neutral tone.
+If passes, return unchanged. If corrections needed, return corrected version. Return ONLY the final text.`,
 
-If the text passes all checks, return it unchanged. If corrections are needed, return the corrected version. Always return ONLY the final text, no commentary.`,
-
-  factCheck: `You are a professional restaurant reviewer and food journalist with specific expertise in fact-checking.
-
-IMPORTANT: You must reply ONLY with a JSON object, exactly in the format shown at the end of this prompt.
-
-Your task is to verify the accuracy of the following restaurant description:
-
+factCheck:`You are a professional restaurant reviewer and food journalist with fact-checking expertise.
+IMPORTANT: Reply ONLY with a JSON object in the exact format below.
+Verify this restaurant description:
 <text>{generated_text}</text>
+Against VERIFIED DATA:
+Restaurant ID: {_id} | Name: {name} | Address: {address} | Province: {province} | Chef: {chef} | Michelin: {michelin} | Description: {description} | Cuisines: {cuisines}
+Check: Cuisine Type matches official recognition.
+Step by step: Compare statements vs data. Flag contradictions (not omissions). Mark "correct" unless specific error found.
+Return ONLY:
+{"_id":"{_id}","restaurant_name":"{name}","fact_check":{"cuisine_type":{"status":"correct or to_check","reason":"reasoning"}}}`};
 
-Using the following VERIFIED DATA about the restaurant:
-
+LP.it={generation:`Scrivi un testo introduttivo tra le 300 e le 400 parole in italiano per il seguente ristorante, che sarà presentato in una rivista online dedicata al mondo della gastronomia.
+Usa SOLO questi DATI VERIFICATI:
 Restaurant ID: {_id}
 Restaurant Name: {name}
 Address: {address}
@@ -535,339 +224,291 @@ Michelin Status: {michelin}
 Description: {description}
 Cuisines: {cuisines}
 
-Check the accuracy of the description with respect to the following aspect:
-- Cuisine Type: Confirm that the cuisine style(s) mentioned in the description match those officially recognized for the restaurant.
+Il testo deve essere:
+- Ben scritto, fluido e naturale, come se fosse redatto da un copywriter madrelingua italiano.
+- Ottimizzato SEO senza keyword stuffing. Primi 20-25 parole devono avere senso autonomo.
+Integra: nome ristorante, chef (solo se fornito), Michelin (se verificata), indirizzo completo (non all'inizio), cucina (se verificata), piatti iconici (solo se confermati).
+Istruzioni aggiuntive:
+- Almeno 5-6 paragrafi. Tono naturale e colloquiale per pubblico raffinato.
+- Evita lodi generiche. Non iniziare/concludere sempre uguale.
+- NON iniziare con "Situato a…" o "Incastonato nel cuore di…".
+- NON parlare del servizio a meno che certo. Varia struttura frasi e lessico.
+- No citazioni clienti. No strutture troppo simili. Stile sobrio e neutro.
+- No riferimenti al magazine. Testo specifico e autentico. No CTA esplicite.
+- Descrizioni sensoriali solo se plausibili. Atmosfera/arredamento solo se certi.
+- Stile chef solo se noto. Evita frasi dubitative. No Gambero Rosso.`,
 
-Proceed step by step:
-1. Compare each statement in the description against the verified data provided.
-2. Identify any factual contradictions (do not flag omissions).
-3. Mark the field as "correct" unless you find a specific factual error.
-4. Provide a clear and concise explanation, focusing only on inaccurate statements, not on missing or assumed content.
+qualityCheck:`Controllo qualità per il seguente testo:
+Restaurant Name: {name}
+TESTO DA CONTROLLARE:
+{generated_text}
 
-Return your answer in this exact JSON format:
-{
-  "_id": "{_id}",
-  "restaurant_name": "{name}",
-  "fact_check": {
-    "cuisine_type": {
-      "status": "correct" or "to_check",
-      "reason": "Your reasoning here."
-    }
-  }
-}`
-};
+Istruzioni:
+- Tono naturale e conversazionale. Dettagli sensoriali solo se confermati. 300-400 parole.
+- No lodi generiche. Varia inizi e conclusioni. No espressioni ChatGPT.
+- No "Situato a" o riferimenti geografici iniziali. No servizio non confermato.
+- Stile per pubblico gastronomico alto. Solo info verificate.
+- Testo specifico, non generico. Varia struttura frasi.
+- No citazioni clienti. Filosofia chef solo se verificata. Tono sobrio, non celebrativo.
+Se conforme, restituisci invariato. Altrimenti correggi. Restituisci SOLO il testo finale.`,
 
-const SAMPLE_CSV = `_id,name,address,province,chef,michelin,description,cuisines
-REST001,The Golden Fork,"12 Baker Street, London W1U 3BU",Greater London,James Whitfield,1 Star,"Seasonal British cuisine with foraged ingredients from the South Downs",British Contemporary
-REST002,Saffron House,"45 High Street, Edinburgh EH1 1SR",Edinburgh,Maria Gonzalez,Bib Gourmand,"A celebration of Spanish-Scottish fusion using local Scottish produce",Spanish-Scottish Fusion`;
+factCheck:`Sei un esperto recensore di ristoranti e giornalista gastronomico con competenze nel fact-checking.
+IMPORTANTE: Rispondi SOLO con un oggetto JSON nel formato sotto indicato.
+Verifica l'accuratezza di questa descrizione:
+<text>{generated_text}</text>
+DATI VERIFICATI:
+Restaurant ID: {_id} | Name: {name} | Address: {address} | Province: {province} | Chef: {chef} | Michelin: {michelin} | Description: {description} | Cuisines: {cuisines}
+Controlla: tipologia di cucina corrisponde a quella ufficiale.
+Passo dopo passo: confronta affermazioni con dati. Annota contraddizioni (non omissioni). "correct" salvo errori specifici.
+Restituisci SOLO:
+{"_id":"{_id}","restaurant_name":"{name}","fact_check":{"cuisine_type":{"status":"correct or to_check","reason":"reasoning"}}}`};
 
-// ─── State ───
-let currentTab = 'single';
-let results = [];
-let abortController = null;
-let isProcessing = false;
+LP.us={generation:`Write one 300-word introductory text for the following restaurant to be featured in a gourmet industry online magazine. Well-written, SEO-friendly (not spammy), reads as if crafted by a human copywriter. First sentence context-oriented for meaningful info even if cut after 20 words.
 
-// ─── Init ───
-document.addEventListener('DOMContentLoaded', () => {
-  resetPrompts();
-});
+VERIFIED DATA:
+Restaurant ID: {_id}
+Restaurant Name: {name}
+Address: {address}
+Province/Region: {province}
+Chef: {chef}
+Michelin Status: {michelin}
+Description: {description}
+Cuisines: {cuisines}
 
-function resetPrompts() {
-  document.getElementById('prompt-gen').value = DEFAULT_PROMPTS.generation;
-  document.getElementById('prompt-qc').value = DEFAULT_PROMPTS.qualityCheck;
-  document.getElementById('prompt-fc').value = DEFAULT_PROMPTS.factCheck;
+Incorporate seamlessly: restaurant name, chef (if renowned), address/city/ZIP/region, distinctions/awards.
+Instructions:
+- Natural conversational tone with storytelling. Sensory details for atmosphere, decor, dish presentation.
+- 300 words. No generic praise. Vary starts/ends. No ChatGPT expressions.
+- No "testament to" repetitions. No "Located"/"Nestled" openings. No service details.
+- High-end gourmet audience style. Only statistically certain details.
+- Focus unique characteristics. Not placeholder content. Subtle sentence variations.
+- No visitor quotes. Chef philosophy without direct quotes. Verified ingredients/dishes only.
+- Sober neutral tone, not celebrational.`,
+
+qualityCheck:`Quality check for this restaurant text:
+Restaurant Name: {name}
+TEXT TO CHECK:
+{generated_text}
+
+Standards:
+- Natural narrative tone. Sensory details only if confirmed. ~300 words.
+- No generic praise. Vary starts/ends. No AI phrases. No "Located"/"Nestled" openings.
+- No service unless confirmed. High-end gourmet style. Only verified info.
+- Specific and genuine. Vary sentence structures. No quotes. Neutral tone.
+If passes, return unchanged. If corrections needed, return corrected. Return ONLY the final text.`,
+
+factCheck:null};
+
+LP.fr={generation:`Rédigez un texte d'introduction de 400 mots en français pour le restaurant suivant, présenté dans un magazine en ligne gastronomique.
+
+FAITS VÉRIFIÉS:
+Restaurant ID: {_id}
+Restaurant Name: {name}
+Address: {address}
+Province/Region: {province}
+Chef: {chef}
+Michelin Status: {michelin}
+Description: {description}
+Cuisines: {cuisines}
+
+Bien écrit, optimisé SEO (pas de bourrage), lu comme rédigé par un humain. Première phrase contextuelle pertinente même si coupée après 20 mots.
+Intégrez: nom restaurant, chef (si disponible/renommé), adresse/ville/code postal/pays/région, distinctions, type de cuisine.
+Instructions:
+- Francophone natif. Au moins 400 mots, 5-6 paragraphes. Ton naturel et conversationnel.
+- Détails sensoriels atmosphère/décor/présentation. Pas d'éloges génériques.
+- Varier débuts/fins. Pas d'expressions ChatGPT. Pas de « Situé »/« Niché ».
+- Pas de détails service. Style public haut de gamme.
+- Détails supplémentaires seulement si certains. Caractéristiques uniques sans référencer le magazine.
+- Pas de contenu généré automatiquement. Variations subtiles structure phrases.
+- Pas de citations visiteurs. Philosophie chef sans citation directe.
+- Ingrédients/plats signature seulement si vérifiés. Ton neutre et sobre.`,
+
+qualityCheck:`Contrôle qualité pour ce texte:
+Restaurant Name: {name}
+TEXTE À VÉRIFIER:
+{generated_text}
+
+Instructions:
+- Ton naturel et conversationnel. Détails sensoriels si confirmés. ~400 mots.
+- Pas de louanges génériques. Varier débuts/fins. Pas d'expressions ChatGPT.
+- Pas de « Situé »/« Nichée ». Pas de service. Style haut de gamme.
+- Détails vérifiés uniquement. Caractéristiques uniques sans référencer magazine.
+- Pas de contenu générique. Variations structure/vocabulaire. Pas de citations.
+- Philosophie chef si vérifiée. Plats emblématiques si vérifiés. Ton sobre.
+Si conforme, renvoyez tel quel. Sinon corrigez. Renvoyez UNIQUEMENT le texte final.`,
+
+factCheck:`You are an experienced restaurant reviewer and food journalist with fact-checking expertise.
+IMPORTANT: Respond ONLY with a JSON object.
+Verify this description:
+<text>{generated_text}</text>
+VERIFIED FACTS:
+Restaurant ID: {_id} | Name: {name} | Address: {address} | Province: {province} | Chef: {chef} | Michelin: {michelin} | Description: {description} | Cuisines: {cuisines}
+Check: 1) Cuisine Type matches official. 2) Signature Dishes — flag only INCORRECT info. 3) Menu Offering — flag only contradictions.
+Step by step. Mark "correct" unless specific errors.
+Return ONLY:
+{"_id":"{_id}","restaurant_name":"{name}","fact_check":{"cuisine_type":{"status":"correct or to_check","reason":"reasoning"}}}`};
+
+LP.es={generation:`Redacta un texto de 400 palabras en español para el siguiente restaurante, presentado en una revista online gastronómica.
+
+HECHOS VERIFICADOS:
+Restaurant ID: {_id}
+Restaurant Name: {name}
+Address: {address}
+Province/Region: {province}
+Chef: {chef}
+Michelin Status: {michelin}
+Description: {description}
+Cuisines: {cuisines}
+
+Bien escrito, optimizado SEO (sin keyword stuffing), leído como redactado por un humano. Primera frase contextual relevante incluso si cortada tras 20 palabras.
+Integra: nombre restaurante, chef (si reconocido), dirección/ciudad/CP/país/región, distinciones, tipo cocina.
+Instrucciones:
+- Hablante nativo español. Al menos 400 palabras, 5-6 párrafos. Tono natural y conversacional.
+- Detalles sensoriales atmósfera/decoración/presentación. No elogios genéricos.
+- Variar inicios/finales. No expresiones ChatGPT. No «Situado»/«Ubicado».
+- No detalles servicio. Estilo público alto nivel.
+- Solo detalles con alta certeza. Características únicas sin referir revista.
+- No contenido genérico. Variaciones sutiles estructura frases.
+- No citas visitantes. Filosofía chef sin cita directa.
+- Ingredientes/platos de autor solo si verificados. Tono sobrio y neutro.`,
+
+qualityCheck:`Control de calidad para este texto:
+Restaurant Name: {name}
+TEXTO A REVISAR:
+{generated_text}
+
+Instrucciones:
+- Tono natural y conversacional. Detalles sensoriales si confirmados. 400 palabras.
+- No elogios genéricos. Variar inicios/finales. No expresiones ChatGPT.
+- No «Situado»/«Ubicado». No servicio. Estilo alto nivel.
+- Solo info con certeza. Características únicas sin referir revista.
+- No contenido genérico. Variaciones estructura/léxico. No citas.
+- Filosofía chef si verificada. Platos emblemáticos si verificados. Tono sobrio.
+Si cumple, devuelve sin cambios. Si necesita correcciones, devuelve corregido. SOLO el texto final.`,
+
+factCheck:`Eres un crítico gastronómico con experiencia en verificación de hechos.
+IMPORTANTE: Responde ÚNICAMENTE con JSON.
+Verifica esta descripción:
+<text>{generated_text}</text>
+HECHOS VERIFICADOS:
+Restaurant ID: {_id} | Name: {name} | Address: {address} | Province: {province} | Chef: {chef} | Michelin: {michelin} | Description: {description} | Cuisines: {cuisines}
+Comprueba: tipo cocina coincide con lo oficial.
+Paso a paso: compara afirmaciones vs hechos. Contradicciones factuales (no omisiones). "correct" salvo errores específicos.
+Devuelve SOLO:
+{"_id":"{_id}","restaurant_name":"{name}","fact_check":{"cuisine_type":{"status":"correct or to_check","reason":"reasoning"}}}`};
+
+LP.us.factCheck=LP.uk.factCheck;
+
+const SAMPLE_CSV=`_id,name,address,province,chef,michelin,description,cuisines
+REST001,The Golden Fork,"12 Baker Street, London W1U 3BU",Greater London,James Whitfield,1 Star,"Seasonal British cuisine with foraged ingredients",British Contemporary
+REST002,Saffron House,"45 High Street, Edinburgh EH1 1SR",Edinburgh,Maria Gonzalez,Bib Gourmand,"Spanish-Scottish fusion using local produce",Spanish-Scottish Fusion`;
+
+// ═══════════════════════════════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════════════════════════════
+let currentLang='uk',currentTab='single',results=[],abortController=null,isProcessing=false;
+
+// ═══════════════════════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════════════════════
+document.addEventListener('DOMContentLoaded',()=>{loadPromptsForLang('uk');updateUI();});
+
+function setLang(l){currentLang=l;document.querySelectorAll('.lang-btn').forEach(b=>b.classList.toggle('active',b.dataset.lang===l));loadPromptsForLang(l);}
+function loadPromptsForLang(l){const p=LP[l];if(!p)return;document.getElementById('prompt-gen').value=p.generation;document.getElementById('prompt-qc').value=p.qualityCheck;document.getElementById('prompt-fc').value=p.factCheck;}
+function togglePrompts(){const e=document.getElementById('prompts-editor'),l=document.getElementById('prompt-toggle-label');if(e.classList.contains('open')){e.classList.remove('open');l.textContent='▸ Edit Prompts';}else{e.classList.add('open');l.textContent='▾ Hide Prompts';}}
+function switchTab(t){currentTab=t;document.getElementById('tab-single').classList.toggle('tab-active',t==='single');document.getElementById('tab-batch').classList.toggle('tab-active',t==='batch');document.getElementById('single-form').classList.toggle('active',t==='single');document.getElementById('batch-form').classList.toggle('active',t==='batch');}
+function loadSample(){document.getElementById('batch-csv').value=SAMPLE_CSV;}
+
+// ═══════════════════════════════════════════════════════════════
+// CSV + INTERPOLATE
+// ═══════════════════════════════════════════════════════════════
+function parseCSV(t){const rows=[];let c='',q=false,f=[];for(let i=0;i<t.length;i++){const ch=t[i];if(ch==='"'){if(q&&t[i+1]==='"'){c+='"';i++;}else q=!q;}else if(ch===','&&!q){f.push(c.trim());c='';}else if((ch==='\n'||ch==='\r')&&!q){f.push(c.trim());c='';if(f.some(x=>x!==''))rows.push([...f]);f=[];if(ch==='\r'&&t[i+1]==='\n')i++;}else c+=ch;}f.push(c.trim());if(f.some(x=>x!==''))rows.push(f);if(rows.length<2)return[];const h=rows[0];return rows.slice(1).map(r=>{const o={};h.forEach((k,i)=>o[k]=r[i]||'');return o;});}
+function interpolate(tpl,d){return tpl.replace(/\{(\w+)\}/g,(m,k)=>d[k]!==undefined?d[k]:m);}
+
+// ═══════════════════════════════════════════════════════════════
+// OPENAI — always via serverless proxy
+// ═══════════════════════════════════════════════════════════════
+async function callOpenAI(prompt,signal){
+  const model=document.getElementById('model').value;
+  const r=await fetch('/api/generate',{method:'POST',headers:{'Content-Type':'application/json'},signal,body:JSON.stringify({model,prompt})});
+  if(!r.ok){const e=await r.json().catch(()=>({}));throw new Error(e.error||`API error: ${r.status}`);}
+  return(await r.json()).content;
 }
 
-function togglePrompts() {
-  const el = document.getElementById('prompts-editor');
-  const label = document.getElementById('prompt-toggle-label');
-  if (el.classList.contains('open')) {
-    el.classList.remove('open');
-    label.textContent = '▸ Edit Prompts';
-  } else {
-    el.classList.add('open');
-    label.textContent = '▾ Hide Prompts';
-  }
-}
-
-function switchTab(tab) {
-  currentTab = tab;
-  document.getElementById('tab-single').classList.toggle('tab-active', tab === 'single');
-  document.getElementById('tab-batch').classList.toggle('tab-active', tab === 'batch');
-  document.getElementById('single-form').classList.toggle('active', tab === 'single');
-  document.getElementById('batch-form').classList.toggle('active', tab === 'batch');
-}
-
-function loadSample() {
-  document.getElementById('batch-csv').value = SAMPLE_CSV;
-}
-
-// ─── CSV Parser ───
-function parseCSV(text) {
-  const rows = [];
-  let current = '', inQuotes = false, fields = [];
-  for (let i = 0; i < text.length; i++) {
-    const ch = text[i];
-    if (ch === '"') {
-      if (inQuotes && text[i+1] === '"') { current += '"'; i++; }
-      else inQuotes = !inQuotes;
-    } else if (ch === ',' && !inQuotes) {
-      fields.push(current.trim()); current = '';
-    } else if ((ch === '\n' || ch === '\r') && !inQuotes) {
-      fields.push(current.trim()); current = '';
-      if (fields.some(f => f !== '')) rows.push([...fields]);
-      fields = [];
-      if (ch === '\r' && text[i+1] === '\n') i++;
-    } else {
-      current += ch;
-    }
-  }
-  fields.push(current.trim());
-  if (fields.some(f => f !== '')) rows.push(fields);
-
-  if (rows.length < 2) return [];
-  const headers = rows[0];
-  return rows.slice(1).map(row => {
-    const obj = {};
-    headers.forEach((h, i) => { obj[h] = row[i] || ''; });
-    return obj;
-  });
-}
-
-function interpolate(template, data) {
-  return template.replace(/\{(\w+)\}/g, (m, k) => data[k] !== undefined ? data[k] : m);
-}
-
-// ─── OpenAI Call ───
-async function callOpenAI(prompt, signal) {
-  const apiKey = document.getElementById('apiKey').value;
-  const model = document.getElementById('model').value;
-  const res = await fetch('https://api.openai.com/v1/chat/completions', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}` },
-    signal,
-    body: JSON.stringify({ model, messages: [{ role: 'user', content: prompt }], temperature: 1 })
-  });
-  if (!res.ok) {
-    const err = await res.json().catch(() => ({}));
-    throw new Error(err.error?.message || `API error: ${res.status}`);
-  }
-  const data = await res.json();
-  return data.choices[0].message.content;
-}
-
-// ─── Status Icon ───
-function statusIcon(status) {
-  if (status === 'running') return '<span class="spinner"></span>';
-  if (status === 'done') return '<span style="color:var(--green);font-size:18px">✓</span>';
-  if (status === 'error') return '<span style="color:var(--red);font-size:18px">✗</span>';
-  return '<span style="color:var(--text2);font-size:18px">○</span>';
-}
-
-// ─── Render ───
-function renderResults() {
-  const section = document.getElementById('results-section');
-  const list = document.getElementById('results-list');
-  section.classList.toggle('visible', results.length > 0);
-
-  list.innerHTML = results.map((r, i) => {
-    const fcStatus = r.factCheckResult?.fact_check?.cuisine_type?.status;
-    const fcBadge = r.factCheckResult && !r.factCheckResult.parseError
-      ? `<span class="fc-badge ${fcStatus === 'correct' ? 'fc-pass' : 'fc-warn'}">${fcStatus === 'correct' ? 'PASS' : 'CHECK'}</span>`
-      : '';
-
-    let body = '';
-    if (r.error) body += `<div class="error-box">Error: ${esc(r.error)}</div>`;
-    if (r.checkedText) body += `
-      <div class="text-section">
-        <h4>Final Text</h4>
-        <div class="text-content">${esc(r.checkedText)}</div>
-        <button class="btn btn-ghost btn-sm" style="margin-top:8px" onclick="navigator.clipboard.writeText(results[${i}].checkedText)">Copy text</button>
-      </div>`;
-    if (r.generatedText && r.checkedText !== r.generatedText) body += `
-      <div class="text-section">
-        <h4>Original (pre-QC)</h4>
-        <div class="text-content text-muted">${esc(r.generatedText)}</div>
-      </div>`;
-    if (r.factCheckResult) {
-      if (r.factCheckResult.parseError) {
-        body += `<div class="text-section"><h4>Fact Check</h4><div class="text-content text-muted">${esc(r.factCheckResult.raw)}</div></div>`;
-      } else {
-        const fc = r.factCheckResult.fact_check?.cuisine_type;
-        body += `<div class="text-section"><h4>Fact Check</h4><div class="fc-detail">
-          <div><strong>Cuisine Type: </strong><span class="${fc?.status === 'correct' ? 'text-green' : 'text-amber'}">${esc(fc?.status || '')}</span></div>
-          <p>${esc(fc?.reason || '')}</p></div></div>`;
-      }
-    }
-
-    return `
-      <div class="result-card ${r.error ? 'result-error' : ''}">
-        <div class="result-header" onclick="toggleResult(${i})">
-          <div class="result-title">
-            <strong>${esc(r.name)}</strong>
-            ${r._id ? `<span class="result-id">${esc(r._id)}</span>` : ''}
-          </div>
-          <div class="step-indicators">
-            <div class="step-pill">${statusIcon(r.step1Status)} <span>Gen</span></div>
-            <div class="step-pill">${statusIcon(r.step2Status)} <span>QC</span></div>
-            <div class="step-pill">${statusIcon(r.step3Status)} <span>FC</span></div>
-            ${fcBadge}
-            <span style="color:var(--text2);font-size:14px">${r._expanded ? '▾' : '▸'}</span>
-          </div>
-        </div>
-        <div class="result-body ${r._expanded ? 'open' : ''}">${body}</div>
-      </div>`;
+// ═══════════════════════════════════════════════════════════════
+// RENDER
+// ═══════════════════════════════════════════════════════════════
+function si(s){if(s==='running')return'<span class="spinner"></span>';if(s==='done')return'<span style="color:var(--green);font-size:18px">✓</span>';if(s==='error')return'<span style="color:var(--red);font-size:18px">✗</span>';return'<span style="color:var(--text2);font-size:18px">○</span>';}
+function esc(s){if(!s)return'';return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function renderResults(){
+  const sec=document.getElementById('results-section'),list=document.getElementById('results-list');
+  sec.classList.toggle('visible',results.length>0);
+  list.innerHTML=results.map((r,i)=>{
+    const fs=r.factCheckResult?.fact_check?.cuisine_type?.status;
+    const fb=r.factCheckResult&&!r.factCheckResult.parseError?`<span class="fc-badge ${fs==='correct'?'fc-pass':'fc-warn'}">${fs==='correct'?'PASS':'CHECK'}</span>`:'';
+    let b='';
+    if(r.error)b+=`<div class="error-box">Error: ${esc(r.error)}</div>`;
+    if(r.checkedText)b+=`<div class="text-section"><h4>Final Text</h4><div class="text-content">${esc(r.checkedText)}</div><button class="btn btn-ghost btn-sm" style="margin-top:8px" onclick="navigator.clipboard.writeText(results[${i}].checkedText)">Copy</button></div>`;
+    if(r.generatedText&&r.checkedText!==r.generatedText)b+=`<div class="text-section"><h4>Original (pre-QC)</h4><div class="text-content text-muted">${esc(r.generatedText)}</div></div>`;
+    if(r.factCheckResult){if(r.factCheckResult.parseError)b+=`<div class="text-section"><h4>Fact Check</h4><div class="text-content text-muted">${esc(r.factCheckResult.raw)}</div></div>`;
+    else{const fc=r.factCheckResult.fact_check?.cuisine_type;b+=`<div class="text-section"><h4>Fact Check</h4><div class="fc-detail"><div><strong>Cuisine: </strong><span class="${fc?.status==='correct'?'text-green':'text-amber'}">${esc(fc?.status||'')}</span></div><p>${esc(fc?.reason||'')}</p></div></div>`;}}
+    return`<div class="result-card ${r.error?'result-error':''}"><div class="result-header" onclick="toggleResult(${i})"><div class="result-title"><strong>${esc(r.name)}</strong>${r._id?`<span class="result-id">${esc(r._id)}</span>`:''}</div><div class="step-indicators"><div class="step-pill">${si(r.step1Status)} Gen</div><div class="step-pill">${si(r.step2Status)} QC</div><div class="step-pill">${si(r.step3Status)} FC</div>${fb}<span style="color:var(--text2);font-size:14px">${r._expanded?'▾':'▸'}</span></div></div><div class="result-body ${r._expanded?'open':''}">${b}</div></div>`;
   }).join('');
 }
-
-function toggleResult(i) {
-  results[i]._expanded = !results[i]._expanded;
-  renderResults();
+function toggleResult(i){results[i]._expanded=!results[i]._expanded;renderResults();}
+function updateUI(){
+  document.getElementById('btn-run').disabled=isProcessing;
+  document.getElementById('btn-stop').classList.toggle('hidden',!isProcessing);
+  document.getElementById('btn-export-json').classList.toggle('hidden',isProcessing||results.length===0);
+  document.getElementById('btn-export-csv').classList.toggle('hidden',isProcessing||results.length===0);
+  const done=results.filter(r=>r.step3Status==='done'||r.error).length;
+  const p=document.getElementById('progress-text');
+  if(isProcessing&&results.length>0){p.classList.remove('hidden');p.textContent=`${done} / ${results.length}`;}else p.classList.add('hidden');
 }
 
-function esc(s) {
-  if (!s) return '';
-  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-}
-
-function updateUI() {
-  document.getElementById('btn-run').disabled = isProcessing || !document.getElementById('apiKey').value;
-  document.getElementById('btn-stop').classList.toggle('hidden', !isProcessing);
-  document.getElementById('btn-export-json').classList.toggle('hidden', isProcessing || results.length === 0);
-  document.getElementById('btn-export-csv').classList.toggle('hidden', isProcessing || results.length === 0);
-
-  const done = results.filter(r => r.step3Status === 'done' || r.error).length;
-  const prog = document.getElementById('progress-text');
-  if (isProcessing && results.length > 0) {
-    prog.classList.remove('hidden');
-    prog.textContent = `${done} / ${results.length}`;
-  } else {
-    prog.classList.add('hidden');
-  }
-}
-
-// ─── Pipeline ───
-async function startPipeline() {
-  const apiKey = document.getElementById('apiKey').value;
-  if (!apiKey) return;
-
+// ═══════════════════════════════════════════════════════════════
+// PIPELINE
+// ═══════════════════════════════════════════════════════════════
+async function startPipeline(){
   let items;
-  if (currentTab === 'single') {
-    const fields = ['_id','name','address','province','chef','michelin','description','cuisines'];
-    const obj = {};
-    fields.forEach(f => { obj[f] = document.getElementById('f-' + f)?.value || ''; });
-    items = [obj];
-  } else {
-    items = parseCSV(document.getElementById('batch-csv').value);
-  }
-  if (!items.length) return;
-
-  abortController = new AbortController();
-  isProcessing = true;
-  results = items.map(item => ({
-    name: item.name || 'Unknown',
-    _id: item._id || '',
-    step1Status: 'pending', step2Status: 'pending', step3Status: 'pending',
-    generatedText: null, checkedText: null, factCheckResult: null, error: null, _expanded: false
-  }));
-  renderResults();
-  updateUI();
-
-  const prompts = {
-    generation: document.getElementById('prompt-gen').value,
-    qualityCheck: document.getElementById('prompt-qc').value,
-    factCheck: document.getElementById('prompt-fc').value,
-  };
-
-  for (let i = 0; i < items.length; i++) {
-    if (abortController.signal.aborted) break;
-    try {
-      // Step 1
-      results[i].step1Status = 'running'; renderResults(); updateUI();
-      const genPrompt = interpolate(prompts.generation, items[i]);
-      const genText = await callOpenAI(genPrompt, abortController.signal);
-      results[i].step1Status = 'done';
-      results[i].generatedText = genText;
+  if(currentTab==='single'){const flds=['_id','name','address','province','chef','michelin','description','cuisines'],o={};flds.forEach(f=>o[f]=document.getElementById('f-'+f)?.value||'');items=[o];}
+  else items=parseCSV(document.getElementById('batch-csv').value);
+  if(!items.length)return;
+  abortController=new AbortController();isProcessing=true;
+  results=items.map(it=>({name:it.name||'Unknown',_id:it._id||'',step1Status:'pending',step2Status:'pending',step3Status:'pending',generatedText:null,checkedText:null,factCheckResult:null,error:null,_expanded:false}));
+  renderResults();updateUI();
+  const pr={generation:document.getElementById('prompt-gen').value,qualityCheck:document.getElementById('prompt-qc').value,factCheck:document.getElementById('prompt-fc').value};
+  for(let i=0;i<items.length;i++){
+    if(abortController.signal.aborted)break;
+    try{
+      results[i].step1Status='running';renderResults();updateUI();
+      const g=await callOpenAI(interpolate(pr.generation,items[i]),abortController.signal);
+      results[i].step1Status='done';results[i].generatedText=g;renderResults();
+      results[i].step2Status='running';renderResults();
+      const q=await callOpenAI(interpolate(pr.qualityCheck,{...items[i],generated_text:g}),abortController.signal);
+      results[i].step2Status='done';results[i].checkedText=q;renderResults();
+      results[i].step3Status='running';renderResults();
+      const f=await callOpenAI(interpolate(pr.factCheck,{...items[i],generated_text:q}),abortController.signal);
+      results[i].step3Status='done';
+      try{results[i].factCheckResult=JSON.parse(f.replace(/```json\n?/g,'').replace(/```/g,'').trim());}catch{results[i].factCheckResult={raw:f,parseError:true};}
       renderResults();
-
-      // Step 2
-      results[i].step2Status = 'running'; renderResults();
-      const qcPrompt = interpolate(prompts.qualityCheck, { ...items[i], generated_text: genText });
-      const qcText = await callOpenAI(qcPrompt, abortController.signal);
-      results[i].step2Status = 'done';
-      results[i].checkedText = qcText;
-      renderResults();
-
-      // Step 3
-      results[i].step3Status = 'running'; renderResults();
-      const fcPrompt = interpolate(prompts.factCheck, { ...items[i], generated_text: qcText });
-      const fcRaw = await callOpenAI(fcPrompt, abortController.signal);
-      results[i].step3Status = 'done';
-      try {
-        const cleaned = fcRaw.replace(/```json\n?/g, '').replace(/```/g, '').trim();
-        results[i].factCheckResult = JSON.parse(cleaned);
-      } catch {
-        results[i].factCheckResult = { raw: fcRaw, parseError: true };
-      }
-      renderResults();
-    } catch (err) {
-      if (err.name === 'AbortError') {
-        results[i].error = 'Cancelled';
-      } else {
-        if (!results[i].generatedText) results[i].step1Status = 'error';
-        else if (!results[i].checkedText) results[i].step2Status = 'error';
-        else results[i].step3Status = 'error';
-        results[i].error = err.message;
-      }
+    }catch(e){
+      if(e.name==='AbortError')results[i].error='Cancelled';
+      else{if(!results[i].generatedText)results[i].step1Status='error';else if(!results[i].checkedText)results[i].step2Status='error';else results[i].step3Status='error';results[i].error=e.message;}
       renderResults();
     }
     updateUI();
   }
-
-  isProcessing = false;
-  updateUI();
+  isProcessing=false;updateUI();
 }
+function stopPipeline(){abortController?.abort();isProcessing=false;updateUI();}
 
-function stopPipeline() {
-  abortController?.abort();
-  isProcessing = false;
-  updateUI();
-}
-
-// ─── Export ───
-function exportJSON() {
-  const data = results.map(r => ({
-    _id: r._id, name: r.name,
-    generated_text: r.generatedText || '',
-    checked_text: r.checkedText || '',
-    fact_check: r.factCheckResult || null,
-    error: r.error || null,
-  }));
-  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-  downloadBlob(blob, `restaurant_texts_${new Date().toISOString().slice(0,10)}.json`);
-}
-
-function exportCSV() {
-  const headers = ['_id','name','checked_text','fact_check_status','fact_check_reason','error'];
-  const rows = results.map(r => {
-    const fc = r.factCheckResult?.fact_check?.cuisine_type;
-    return [r._id, q(r.name), q(r.checkedText||''), fc?.status||'', q(fc?.reason||''), q(r.error||'')].join(',');
-  });
-  const csv = [headers.join(','), ...rows].join('\n');
-  downloadBlob(new Blob([csv], { type: 'text/csv' }), `restaurant_texts_${new Date().toISOString().slice(0,10)}.csv`);
-}
-
-function q(s) { return `"${(s||'').replace(/"/g, '""')}"`; }
-
-function downloadBlob(blob, name) {
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url; a.download = name; a.click();
-  URL.revokeObjectURL(url);
-}
-
-// Enable/disable run button based on API key
-document.getElementById('apiKey').addEventListener('input', updateUI);
+// ═══════════════════════════════════════════════════════════════
+// EXPORT
+// ═══════════════════════════════════════════════════════════════
+function exportJSON(){const d=results.map(r=>({_id:r._id,name:r.name,language:currentLang,generated_text:r.generatedText||'',checked_text:r.checkedText||'',fact_check:r.factCheckResult||null,error:r.error||null}));dl(new Blob([JSON.stringify(d,null,2)],{type:'application/json'}),`texts_${currentLang}_${new Date().toISOString().slice(0,10)}.json`);}
+function exportCSV(){const h=['_id','name','language','checked_text','fc_status','fc_reason','error'];const rows=results.map(r=>{const fc=r.factCheckResult?.fact_check?.cuisine_type;return[r._id,qt(r.name),currentLang,qt(r.checkedText||''),fc?.status||'',qt(fc?.reason||''),qt(r.error||'')].join(',');});dl(new Blob([[h.join(','),...rows].join('\n')],{type:'text/csv'}),`texts_${currentLang}_${new Date().toISOString().slice(0,10)}.csv`);}
+function qt(s){return`"${(s||'').replace(/"/g,'""')}"`;} function dl(b,n){const u=URL.createObjectURL(b),a=document.createElement('a');a.href=u;a.download=n;a.click();URL.revokeObjectURL(u);}
 </script>
 </body>
 </html>
