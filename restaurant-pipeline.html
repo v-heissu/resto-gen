@@ -1,0 +1,873 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Restaurant Text Pipeline</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&family=JetBrains+Mono:wght@400;500&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --bg: #0f1117;
+    --surface: #181b24;
+    --surface2: #1f2330;
+    --border: #2a2e3a;
+    --text: #e4e6ed;
+    --text2: #9499a8;
+    --accent: #c8a46e;
+    --accent-dim: #a0834a;
+    --green: #4ade80;
+    --red: #f87171;
+    --amber: #fbbf24;
+    --radius: 10px;
+  }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+    min-height: 100vh;
+  }
+
+  .app-header {
+    border-bottom: 1px solid var(--border);
+    background: linear-gradient(180deg, #14161e 0%, var(--bg) 100%);
+  }
+  .header-inner {
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 32px 24px 24px;
+  }
+  .app-header h1 {
+    font-size: 22px;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    color: var(--accent);
+  }
+  .header-sub {
+    color: var(--text2);
+    font-size: 14px;
+    margin-top: 4px;
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  .main-content {
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 20px;
+  }
+
+  .config-row {
+    display: flex;
+    gap: 12px;
+  }
+  @media (max-width: 600px) {
+    .config-row { flex-direction: column; }
+  }
+
+  .field { display: flex; flex-direction: column; gap: 4px; flex: 1; }
+  .field label {
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text2);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  .input, .textarea {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 10px 12px;
+    color: var(--text);
+    font-family: inherit;
+    font-size: 14px;
+    outline: none;
+    transition: border-color 0.2s;
+    width: 100%;
+  }
+  .input:focus, .textarea:focus {
+    border-color: var(--accent-dim);
+  }
+  select.input {
+    cursor: pointer;
+    appearance: none;
+    -webkit-appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%239499a8' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    padding-right: 32px;
+  }
+
+  .textarea { resize: vertical; }
+  .prompt-textarea {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    line-height: 1.7;
+  }
+
+  .prompts-editor {
+    margin-top: 12px;
+    display: none;
+    flex-direction: column;
+    gap: 16px;
+  }
+  .prompts-editor.open { display: flex; }
+  .prompt-block label {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--accent);
+    margin-bottom: 4px;
+    display: block;
+  }
+
+  .tab-row {
+    display: flex;
+    margin-bottom: 16px;
+    border-bottom: 1px solid var(--border);
+  }
+  .tab-btn {
+    background: none;
+    border: none;
+    color: var(--text2);
+    font-family: inherit;
+    font-size: 14px;
+    padding: 8px 16px;
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    transition: all 0.2s;
+  }
+  .tab-btn:hover { color: var(--text); }
+  .tab-active {
+    color: var(--accent) !important;
+    border-bottom-color: var(--accent) !important;
+  }
+
+  .form-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 12px;
+    margin-bottom: 12px;
+  }
+
+  .hint {
+    font-size: 12px;
+    color: var(--text2);
+    margin-bottom: 8px;
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  .action-row {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    margin-top: 16px;
+    flex-wrap: wrap;
+  }
+
+  .btn {
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 500;
+    border: none;
+    border-radius: 6px;
+    padding: 10px 20px;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .btn:disabled { opacity: 0.4; cursor: not-allowed; }
+  .btn-primary { background: var(--accent); color: #0f1117; }
+  .btn-primary:hover:not(:disabled) { background: #d4b07a; }
+  .btn-danger { background: #dc2626; color: white; }
+  .btn-danger:hover { background: #ef4444; }
+  .btn-ghost { background: transparent; color: var(--text2); border: 1px solid var(--border); }
+  .btn-ghost:hover { color: var(--text); border-color: var(--text2); }
+  .btn-sm { padding: 6px 12px; font-size: 12px; }
+
+  .progress-text {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    color: var(--text2);
+  }
+
+  #results-section { display: none; }
+  #results-section.visible { display: block; }
+  #results-section h2 {
+    font-size: 16px;
+    font-weight: 500;
+    color: var(--text2);
+    margin-bottom: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+
+  .result-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    margin-bottom: 8px;
+    overflow: hidden;
+  }
+  .result-error { border-color: #7f1d1d; }
+
+  .result-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 14px 18px;
+    cursor: pointer;
+    gap: 12px;
+  }
+  .result-header:hover { background: var(--surface2); }
+
+  .result-title {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-width: 0;
+  }
+  .result-title strong {
+    font-size: 15px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .result-id {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--text2);
+    background: var(--surface2);
+    padding: 2px 8px;
+    border-radius: 4px;
+  }
+
+  .step-indicators {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-shrink: 0;
+  }
+  .step-pill {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 12px;
+    color: var(--text2);
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  .fc-badge {
+    font-size: 11px;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-family: 'JetBrains Mono', monospace;
+  }
+  .fc-pass { background: #14532d; color: #4ade80; }
+  .fc-warn { background: #78350f; color: #fbbf24; }
+
+  .result-body {
+    padding: 0 18px 18px;
+    border-top: 1px solid var(--border);
+    display: none;
+  }
+  .result-body.open { display: block; }
+
+  .error-box {
+    background: #1c0a0a;
+    border: 1px solid #7f1d1d;
+    border-radius: 6px;
+    padding: 10px 14px;
+    font-size: 13px;
+    color: var(--red);
+    margin-top: 12px;
+  }
+
+  .text-section { margin-top: 16px; }
+  .text-section h4 {
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--accent);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 8px;
+  }
+  .text-content {
+    font-size: 14px;
+    line-height: 1.75;
+    white-space: pre-wrap;
+    background: var(--surface2);
+    padding: 16px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+  }
+  .text-muted { color: var(--text2); font-size: 13px; }
+
+  .fc-detail {
+    background: var(--surface2);
+    padding: 14px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    font-size: 14px;
+  }
+  .fc-detail p { margin-top: 6px; color: var(--text2); font-size: 13px; }
+
+  .text-green { color: var(--green); }
+  .text-amber { color: var(--amber); }
+
+  .spinner {
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    border: 2px solid var(--border);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+    vertical-align: middle;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .hidden { display: none !important; }
+  #single-form, #batch-form { display: none; }
+  #single-form.active, #batch-form.active { display: block; }
+</style>
+</head>
+<body>
+
+<header class="app-header">
+  <div class="header-inner">
+    <h1>Restaurant Text Pipeline</h1>
+    <p class="header-sub">Generate → Quality Check → Fact Check</p>
+  </div>
+</header>
+
+<div class="main-content">
+  <!-- Config -->
+  <section class="card">
+    <div class="config-row">
+      <div class="field" style="flex:2">
+        <label>OpenAI API Key</label>
+        <input type="password" id="apiKey" class="input" placeholder="sk-..." />
+      </div>
+      <div class="field" style="flex:1">
+        <label>Model</label>
+        <select id="model" class="input">
+          <option value="gpt-4.1">gpt-4.1</option>
+          <option value="gpt-4.1-mini">gpt-4.1-mini</option>
+          <option value="gpt-4.1-nano">gpt-4.1-nano</option>
+          <option value="gpt-4o">gpt-4o</option>
+          <option value="gpt-4o-mini">gpt-4o-mini</option>
+          <option value="gpt-5.2-chat-latest" selected>gpt-5.2-chat-latest</option>
+          <option value="gpt-5.2">gpt-5.2</option>
+        </select>
+      </div>
+    </div>
+    <button class="btn btn-ghost" style="margin-top:8px" onclick="togglePrompts()">
+      <span id="prompt-toggle-label">▸ Edit Prompts</span>
+    </button>
+    <div id="prompts-editor" class="prompts-editor">
+      <div class="prompt-block">
+        <label>Step 1 — Generation</label>
+        <textarea id="prompt-gen" class="textarea prompt-textarea" rows="10"></textarea>
+      </div>
+      <div class="prompt-block">
+        <label>Step 2 — Quality Check</label>
+        <textarea id="prompt-qc" class="textarea prompt-textarea" rows="10"></textarea>
+      </div>
+      <div class="prompt-block">
+        <label>Step 3 — Fact Check</label>
+        <textarea id="prompt-fc" class="textarea prompt-textarea" rows="10"></textarea>
+      </div>
+      <button class="btn btn-ghost btn-sm" onclick="resetPrompts()">Reset to defaults</button>
+    </div>
+  </section>
+
+  <!-- Input -->
+  <section class="card">
+    <div class="tab-row">
+      <button class="tab-btn tab-active" id="tab-single" onclick="switchTab('single')">Single Restaurant</button>
+      <button class="tab-btn" id="tab-batch" onclick="switchTab('batch')">Batch (CSV)</button>
+    </div>
+
+    <div id="single-form" class="active">
+      <div class="form-grid">
+        <div class="field"><label>ID</label><input id="f-_id" class="input" placeholder="ID" /></div>
+        <div class="field"><label>Restaurant Name</label><input id="f-name" class="input" placeholder="Name" /></div>
+        <div class="field"><label>Full Address</label><input id="f-address" class="input" placeholder="Address" /></div>
+        <div class="field"><label>Province/Region</label><input id="f-province" class="input" placeholder="Province" /></div>
+        <div class="field"><label>Chef</label><input id="f-chef" class="input" placeholder="Chef" /></div>
+        <div class="field"><label>Michelin Status</label><input id="f-michelin" class="input" placeholder="Michelin" /></div>
+      </div>
+      <div class="field">
+        <label>Description</label>
+        <textarea id="f-description" class="textarea" rows="3" placeholder="Restaurant description..."></textarea>
+      </div>
+      <div class="field" style="margin-top:8px">
+        <label>Cuisines</label>
+        <input id="f-cuisines" class="input" placeholder="e.g. British Contemporary, Italian" />
+      </div>
+    </div>
+
+    <div id="batch-form">
+      <p class="hint">CSV with headers: _id, name, address, province, chef, michelin, description, cuisines</p>
+      <textarea id="batch-csv" class="textarea" rows="8" placeholder="Paste CSV data here..."></textarea>
+      <button class="btn btn-ghost btn-sm" style="margin-top:4px" onclick="loadSample()">Load sample data</button>
+    </div>
+
+    <div class="action-row">
+      <button class="btn btn-primary" id="btn-run" onclick="startPipeline()">Run Pipeline</button>
+      <button class="btn btn-danger hidden" id="btn-stop" onclick="stopPipeline()">Stop</button>
+      <button class="btn btn-ghost hidden" id="btn-export-json" onclick="exportJSON()">Export JSON</button>
+      <button class="btn btn-ghost hidden" id="btn-export-csv" onclick="exportCSV()">Export CSV</button>
+      <span class="progress-text hidden" id="progress-text"></span>
+    </div>
+  </section>
+
+  <!-- Results -->
+  <section id="results-section">
+    <h2>Results</h2>
+    <div id="results-list"></div>
+  </section>
+</div>
+
+<script>
+// ─── Default Prompts ───
+const DEFAULT_PROMPTS = {
+  generation: `Write one 400-word introductory text for the following restaurant to be featured in a high-end gourmet industry online magazine targeting the UK market. The text should be well-written, SEO-friendly (without keyword stuffing), and must feel authentically crafted by a professional human copywriter.
+
+Use ONLY the following VERIFIED DATA for the restaurant:
+
+Restaurant ID: {_id}
+Restaurant Name: {name}
+Address: {address}
+Province/Region: {province}
+Chef: {chef}
+Michelin Status: {michelin}
+Description: {description}
+Cuisines: {cuisines}
+
+Text must be:
+- Well-written, fluent, and natural, as if crafted by a native English copywriter.
+- SEO-optimized in a natural way — avoid keyword stuffing or repetitive phrasing.
+- Start with an engaging sentence that makes sense and sparks interest even if only the first 20–25 words are shown.
+
+Integrate the following elements smoothly into the narrative:
+- The exact restaurant name.
+- The chef's name, only if provided (do not assume or make it up).
+- Any verified Michelin Guide distinction (e.g., stars or Bib Gourmand).
+- The full address, including city, postal code, country, and region — but not at the beginning of the text.
+- The cuisine type, only if confirmed and verified (do not invent styles or influences).
+- Any signature dishes or recurring ingredients, but only if they are confirmed and accurate.
+
+Additional instructions:
+- Each text must include at least 5–6 distinct paragraphs.
+- Use a natural, conversational tone, suitable for a refined, food-savvy audience.
+- Avoid generic praise and impersonal expressions — focus instead on specific elements that make the restaurant unique.
+- Do not begin or end every article in the same way.
+- Do NOT open with phrases like "Located in…" or "Nestled in the heart of…", nor start with the address or geographical references.
+- Do NOT write about service or hospitality unless explicitly confirmed.
+- Vary sentence structure and vocabulary to avoid robotic or repetitive writing.
+- Do not use customer quotes or reviews.
+- Avoid template-like or overly similar article structures.
+- Maintain a neutral and sober tone — aim to describe excellence without "celebrating" the restaurant or chef.
+- Do not reference the magazine itself ("in this issue", "our selection", etc.).
+- Avoid overly explicit calls to action.
+- Include sensory descriptions (e.g. aromas, textures, colors of dishes) only if they are plausible and confirmed.
+- Describe ambiance and interior design only if such details are verified. If not, focus solely on the cuisine.
+- If the chef's style or philosophy is known and confirmed, include it without generalizing. Otherwise, omit.`,
+
+  qualityCheck: `Please ensure the following quality standards are met for this restaurant text:
+
+Restaurant Name: {name}
+
+TEXT TO CHECK:
+{generated_text}
+
+Quality standards:
+- Use a natural and narrative tone that draws the reader in.
+- Include sensory details to describe the ambiance, decor, and dish presentation — but only if information is confirmed.
+- The text must be between 300 and 400 words.
+- Avoid generic praise — focus on specific, unique elements.
+- Vary how each article starts and ends.
+- Avoid AI-sounding phrases like "In conclusion", "To sum up", etc.
+- Do not start with phrases like "Located in…", "Nestled in…", or any direct geographical reference.
+- Do not mention restaurant service unless 100% confirmed.
+- Write for a high-end gastronomic audience: polished, not generic, and with a human touch.
+- Include only verified information — no assumptions or guesses.
+- Emphasize what makes each restaurant stand out, without referencing the magazine format.
+- The article must feel specific and genuine, not like a generic filler or AI-generated summary.
+- Subtly vary sentence structures and word choice to mimic natural human writing.
+- Do not include quotes or customer opinions.
+- Mention the chef's philosophy and iconic dishes only if they are confirmed — otherwise, omit.
+- Keep a refined, neutral tone — it's not a promotional or celebratory piece.
+
+If the text passes all checks, return it unchanged. If corrections are needed, return the corrected version. Always return ONLY the final text, no commentary.`,
+
+  factCheck: `You are a professional restaurant reviewer and food journalist with specific expertise in fact-checking.
+
+IMPORTANT: You must reply ONLY with a JSON object, exactly in the format shown at the end of this prompt.
+
+Your task is to verify the accuracy of the following restaurant description:
+
+<text>{generated_text}</text>
+
+Using the following VERIFIED DATA about the restaurant:
+
+Restaurant ID: {_id}
+Restaurant Name: {name}
+Address: {address}
+Province/Region: {province}
+Chef: {chef}
+Michelin Status: {michelin}
+Description: {description}
+Cuisines: {cuisines}
+
+Check the accuracy of the description with respect to the following aspect:
+- Cuisine Type: Confirm that the cuisine style(s) mentioned in the description match those officially recognized for the restaurant.
+
+Proceed step by step:
+1. Compare each statement in the description against the verified data provided.
+2. Identify any factual contradictions (do not flag omissions).
+3. Mark the field as "correct" unless you find a specific factual error.
+4. Provide a clear and concise explanation, focusing only on inaccurate statements, not on missing or assumed content.
+
+Return your answer in this exact JSON format:
+{
+  "_id": "{_id}",
+  "restaurant_name": "{name}",
+  "fact_check": {
+    "cuisine_type": {
+      "status": "correct" or "to_check",
+      "reason": "Your reasoning here."
+    }
+  }
+}`
+};
+
+const SAMPLE_CSV = `_id,name,address,province,chef,michelin,description,cuisines
+REST001,The Golden Fork,"12 Baker Street, London W1U 3BU",Greater London,James Whitfield,1 Star,"Seasonal British cuisine with foraged ingredients from the South Downs",British Contemporary
+REST002,Saffron House,"45 High Street, Edinburgh EH1 1SR",Edinburgh,Maria Gonzalez,Bib Gourmand,"A celebration of Spanish-Scottish fusion using local Scottish produce",Spanish-Scottish Fusion`;
+
+// ─── State ───
+let currentTab = 'single';
+let results = [];
+let abortController = null;
+let isProcessing = false;
+
+// ─── Init ───
+document.addEventListener('DOMContentLoaded', () => {
+  resetPrompts();
+});
+
+function resetPrompts() {
+  document.getElementById('prompt-gen').value = DEFAULT_PROMPTS.generation;
+  document.getElementById('prompt-qc').value = DEFAULT_PROMPTS.qualityCheck;
+  document.getElementById('prompt-fc').value = DEFAULT_PROMPTS.factCheck;
+}
+
+function togglePrompts() {
+  const el = document.getElementById('prompts-editor');
+  const label = document.getElementById('prompt-toggle-label');
+  if (el.classList.contains('open')) {
+    el.classList.remove('open');
+    label.textContent = '▸ Edit Prompts';
+  } else {
+    el.classList.add('open');
+    label.textContent = '▾ Hide Prompts';
+  }
+}
+
+function switchTab(tab) {
+  currentTab = tab;
+  document.getElementById('tab-single').classList.toggle('tab-active', tab === 'single');
+  document.getElementById('tab-batch').classList.toggle('tab-active', tab === 'batch');
+  document.getElementById('single-form').classList.toggle('active', tab === 'single');
+  document.getElementById('batch-form').classList.toggle('active', tab === 'batch');
+}
+
+function loadSample() {
+  document.getElementById('batch-csv').value = SAMPLE_CSV;
+}
+
+// ─── CSV Parser ───
+function parseCSV(text) {
+  const rows = [];
+  let current = '', inQuotes = false, fields = [];
+  for (let i = 0; i < text.length; i++) {
+    const ch = text[i];
+    if (ch === '"') {
+      if (inQuotes && text[i+1] === '"') { current += '"'; i++; }
+      else inQuotes = !inQuotes;
+    } else if (ch === ',' && !inQuotes) {
+      fields.push(current.trim()); current = '';
+    } else if ((ch === '\n' || ch === '\r') && !inQuotes) {
+      fields.push(current.trim()); current = '';
+      if (fields.some(f => f !== '')) rows.push([...fields]);
+      fields = [];
+      if (ch === '\r' && text[i+1] === '\n') i++;
+    } else {
+      current += ch;
+    }
+  }
+  fields.push(current.trim());
+  if (fields.some(f => f !== '')) rows.push(fields);
+
+  if (rows.length < 2) return [];
+  const headers = rows[0];
+  return rows.slice(1).map(row => {
+    const obj = {};
+    headers.forEach((h, i) => { obj[h] = row[i] || ''; });
+    return obj;
+  });
+}
+
+function interpolate(template, data) {
+  return template.replace(/\{(\w+)\}/g, (m, k) => data[k] !== undefined ? data[k] : m);
+}
+
+// ─── OpenAI Call ───
+async function callOpenAI(prompt, signal) {
+  const apiKey = document.getElementById('apiKey').value;
+  const model = document.getElementById('model').value;
+  const res = await fetch('https://api.openai.com/v1/chat/completions', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}` },
+    signal,
+    body: JSON.stringify({ model, messages: [{ role: 'user', content: prompt }], temperature: 0.7 })
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.error?.message || `API error: ${res.status}`);
+  }
+  const data = await res.json();
+  return data.choices[0].message.content;
+}
+
+// ─── Status Icon ───
+function statusIcon(status) {
+  if (status === 'running') return '<span class="spinner"></span>';
+  if (status === 'done') return '<span style="color:var(--green);font-size:18px">✓</span>';
+  if (status === 'error') return '<span style="color:var(--red);font-size:18px">✗</span>';
+  return '<span style="color:var(--text2);font-size:18px">○</span>';
+}
+
+// ─── Render ───
+function renderResults() {
+  const section = document.getElementById('results-section');
+  const list = document.getElementById('results-list');
+  section.classList.toggle('visible', results.length > 0);
+
+  list.innerHTML = results.map((r, i) => {
+    const fcStatus = r.factCheckResult?.fact_check?.cuisine_type?.status;
+    const fcBadge = r.factCheckResult && !r.factCheckResult.parseError
+      ? `<span class="fc-badge ${fcStatus === 'correct' ? 'fc-pass' : 'fc-warn'}">${fcStatus === 'correct' ? 'PASS' : 'CHECK'}</span>`
+      : '';
+
+    let body = '';
+    if (r.error) body += `<div class="error-box">Error: ${esc(r.error)}</div>`;
+    if (r.checkedText) body += `
+      <div class="text-section">
+        <h4>Final Text</h4>
+        <div class="text-content">${esc(r.checkedText)}</div>
+        <button class="btn btn-ghost btn-sm" style="margin-top:8px" onclick="navigator.clipboard.writeText(results[${i}].checkedText)">Copy text</button>
+      </div>`;
+    if (r.generatedText && r.checkedText !== r.generatedText) body += `
+      <div class="text-section">
+        <h4>Original (pre-QC)</h4>
+        <div class="text-content text-muted">${esc(r.generatedText)}</div>
+      </div>`;
+    if (r.factCheckResult) {
+      if (r.factCheckResult.parseError) {
+        body += `<div class="text-section"><h4>Fact Check</h4><div class="text-content text-muted">${esc(r.factCheckResult.raw)}</div></div>`;
+      } else {
+        const fc = r.factCheckResult.fact_check?.cuisine_type;
+        body += `<div class="text-section"><h4>Fact Check</h4><div class="fc-detail">
+          <div><strong>Cuisine Type: </strong><span class="${fc?.status === 'correct' ? 'text-green' : 'text-amber'}">${esc(fc?.status || '')}</span></div>
+          <p>${esc(fc?.reason || '')}</p></div></div>`;
+      }
+    }
+
+    return `
+      <div class="result-card ${r.error ? 'result-error' : ''}">
+        <div class="result-header" onclick="toggleResult(${i})">
+          <div class="result-title">
+            <strong>${esc(r.name)}</strong>
+            ${r._id ? `<span class="result-id">${esc(r._id)}</span>` : ''}
+          </div>
+          <div class="step-indicators">
+            <div class="step-pill">${statusIcon(r.step1Status)} <span>Gen</span></div>
+            <div class="step-pill">${statusIcon(r.step2Status)} <span>QC</span></div>
+            <div class="step-pill">${statusIcon(r.step3Status)} <span>FC</span></div>
+            ${fcBadge}
+            <span style="color:var(--text2);font-size:14px">${r._expanded ? '▾' : '▸'}</span>
+          </div>
+        </div>
+        <div class="result-body ${r._expanded ? 'open' : ''}">${body}</div>
+      </div>`;
+  }).join('');
+}
+
+function toggleResult(i) {
+  results[i]._expanded = !results[i]._expanded;
+  renderResults();
+}
+
+function esc(s) {
+  if (!s) return '';
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function updateUI() {
+  document.getElementById('btn-run').disabled = isProcessing || !document.getElementById('apiKey').value;
+  document.getElementById('btn-stop').classList.toggle('hidden', !isProcessing);
+  document.getElementById('btn-export-json').classList.toggle('hidden', isProcessing || results.length === 0);
+  document.getElementById('btn-export-csv').classList.toggle('hidden', isProcessing || results.length === 0);
+
+  const done = results.filter(r => r.step3Status === 'done' || r.error).length;
+  const prog = document.getElementById('progress-text');
+  if (isProcessing && results.length > 0) {
+    prog.classList.remove('hidden');
+    prog.textContent = `${done} / ${results.length}`;
+  } else {
+    prog.classList.add('hidden');
+  }
+}
+
+// ─── Pipeline ───
+async function startPipeline() {
+  const apiKey = document.getElementById('apiKey').value;
+  if (!apiKey) return;
+
+  let items;
+  if (currentTab === 'single') {
+    const fields = ['_id','name','address','province','chef','michelin','description','cuisines'];
+    const obj = {};
+    fields.forEach(f => { obj[f] = document.getElementById('f-' + f)?.value || ''; });
+    items = [obj];
+  } else {
+    items = parseCSV(document.getElementById('batch-csv').value);
+  }
+  if (!items.length) return;
+
+  abortController = new AbortController();
+  isProcessing = true;
+  results = items.map(item => ({
+    name: item.name || 'Unknown',
+    _id: item._id || '',
+    step1Status: 'pending', step2Status: 'pending', step3Status: 'pending',
+    generatedText: null, checkedText: null, factCheckResult: null, error: null, _expanded: false
+  }));
+  renderResults();
+  updateUI();
+
+  const prompts = {
+    generation: document.getElementById('prompt-gen').value,
+    qualityCheck: document.getElementById('prompt-qc').value,
+    factCheck: document.getElementById('prompt-fc').value,
+  };
+
+  for (let i = 0; i < items.length; i++) {
+    if (abortController.signal.aborted) break;
+    try {
+      // Step 1
+      results[i].step1Status = 'running'; renderResults(); updateUI();
+      const genPrompt = interpolate(prompts.generation, items[i]);
+      const genText = await callOpenAI(genPrompt, abortController.signal);
+      results[i].step1Status = 'done';
+      results[i].generatedText = genText;
+      renderResults();
+
+      // Step 2
+      results[i].step2Status = 'running'; renderResults();
+      const qcPrompt = interpolate(prompts.qualityCheck, { ...items[i], generated_text: genText });
+      const qcText = await callOpenAI(qcPrompt, abortController.signal);
+      results[i].step2Status = 'done';
+      results[i].checkedText = qcText;
+      renderResults();
+
+      // Step 3
+      results[i].step3Status = 'running'; renderResults();
+      const fcPrompt = interpolate(prompts.factCheck, { ...items[i], generated_text: qcText });
+      const fcRaw = await callOpenAI(fcPrompt, abortController.signal);
+      results[i].step3Status = 'done';
+      try {
+        const cleaned = fcRaw.replace(/```json\n?/g, '').replace(/```/g, '').trim();
+        results[i].factCheckResult = JSON.parse(cleaned);
+      } catch {
+        results[i].factCheckResult = { raw: fcRaw, parseError: true };
+      }
+      renderResults();
+    } catch (err) {
+      if (err.name === 'AbortError') {
+        results[i].error = 'Cancelled';
+      } else {
+        if (!results[i].generatedText) results[i].step1Status = 'error';
+        else if (!results[i].checkedText) results[i].step2Status = 'error';
+        else results[i].step3Status = 'error';
+        results[i].error = err.message;
+      }
+      renderResults();
+    }
+    updateUI();
+  }
+
+  isProcessing = false;
+  updateUI();
+}
+
+function stopPipeline() {
+  abortController?.abort();
+  isProcessing = false;
+  updateUI();
+}
+
+// ─── Export ───
+function exportJSON() {
+  const data = results.map(r => ({
+    _id: r._id, name: r.name,
+    generated_text: r.generatedText || '',
+    checked_text: r.checkedText || '',
+    fact_check: r.factCheckResult || null,
+    error: r.error || null,
+  }));
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  downloadBlob(blob, `restaurant_texts_${new Date().toISOString().slice(0,10)}.json`);
+}
+
+function exportCSV() {
+  const headers = ['_id','name','checked_text','fact_check_status','fact_check_reason','error'];
+  const rows = results.map(r => {
+    const fc = r.factCheckResult?.fact_check?.cuisine_type;
+    return [r._id, q(r.name), q(r.checkedText||''), fc?.status||'', q(fc?.reason||''), q(r.error||'')].join(',');
+  });
+  const csv = [headers.join(','), ...rows].join('\n');
+  downloadBlob(new Blob([csv], { type: 'text/csv' }), `restaurant_texts_${new Date().toISOString().slice(0,10)}.csv`);
+}
+
+function q(s) { return `"${(s||'').replace(/"/g, '""')}"`; }
+
+function downloadBlob(blob, name) {
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = name; a.click();
+  URL.revokeObjectURL(url);
+}
+
+// Enable/disable run button based on API key
+document.getElementById('apiKey').addEventListener('input', updateUI);
+</script>
+</body>
+</html>
