@@ -10,24 +10,30 @@
   *{margin:0;padding:0;box-sizing:border-box}
   :root{--bg:#0f1117;--surface:#181b24;--surface2:#1f2330;--border:#2a2e3a;--text:#e4e6ed;--text2:#9499a8;--accent:#c8a46e;--accent-dim:#a0834a;--green:#4ade80;--red:#f87171;--amber:#fbbf24;--radius:10px}
   body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);line-height:1.6;min-height:100vh}
+
+  /* HEADER */
   .app-header{border-bottom:1px solid var(--border);background:linear-gradient(180deg,#14161e 0%,var(--bg) 100%)}
-  .header-inner{max-width:960px;margin:0 auto;padding:32px 24px 24px;display:flex;justify-content:space-between;align-items:flex-end}
+  .header-inner{max-width:960px;margin:0 auto;padding:28px 24px 20px}
+  .header-top{display:flex;justify-content:space-between;align-items:center}
   .header-left h1{font-size:22px;font-weight:600;letter-spacing:-0.02em;color:var(--accent)}
-  .header-sub{color:var(--text2);font-size:14px;margin-top:4px;font-family:'JetBrains Mono',monospace}
-  .lang-selector{display:flex;gap:0;border:1px solid var(--border);border-radius:6px;overflow:hidden}
-  .lang-btn{background:var(--surface2);border:none;color:var(--text2);font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:500;padding:6px 12px;cursor:pointer;transition:all .15s;border-right:1px solid var(--border)}
-  .lang-btn:last-child{border-right:none}
-  .lang-btn:hover{color:var(--text)}
-  .lang-btn.active{background:var(--accent);color:#0f1117}
+  .header-sub{color:var(--text2);font-size:13px;margin-top:2px;font-family:'JetBrains Mono',monospace}
+  .model-sel{background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:6px 28px 6px 10px;color:var(--text);font-family:'JetBrains Mono',monospace;font-size:12px;outline:none;appearance:none;-webkit-appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 12 12'%3E%3Cpath fill='%239499a8' d='M6 8L1 3h10z'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 8px center;cursor:pointer}
+
+  /* LANGUAGE SELECTOR */
+  .lang-bar{margin-top:16px;display:flex;gap:6px;flex-wrap:wrap}
+  .lang-btn{display:flex;align-items:center;gap:8px;background:var(--surface2);border:2px solid var(--border);border-radius:8px;padding:8px 16px;cursor:pointer;transition:all .2s;color:var(--text2);font-family:'DM Sans',sans-serif;font-size:14px;font-weight:500}
+  .lang-btn:hover{border-color:var(--accent-dim);color:var(--text)}
+  .lang-btn.active{border-color:var(--accent);background:rgba(200,164,110,0.1);color:var(--accent)}
+  .lang-flag{font-size:24px;line-height:1}
+  .lang-label{font-size:12px;font-family:'JetBrains Mono',monospace;letter-spacing:.03em}
+
+  /* MAIN */
   .main-content{max-width:960px;margin:0 auto;padding:24px;display:flex;flex-direction:column;gap:20px}
   .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:20px}
-  .config-row{display:flex;gap:12px}
-  @media(max-width:600px){.config-row{flex-direction:column}.header-inner{flex-direction:column;align-items:flex-start;gap:12px}}
   .field{display:flex;flex-direction:column;gap:4px;flex:1}
   .field label{font-size:12px;font-weight:500;color:var(--text2);text-transform:uppercase;letter-spacing:.05em}
   .input,.textarea{background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:10px 12px;color:var(--text);font-family:inherit;font-size:14px;outline:none;transition:border-color .2s;width:100%}
   .input:focus,.textarea:focus{border-color:var(--accent-dim)}
-  select.input{cursor:pointer;appearance:none;-webkit-appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%239499a8' d='M6 8L1 3h10z'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;padding-right:32px}
   .textarea{resize:vertical}.prompt-textarea{font-family:'JetBrains Mono',monospace;font-size:12px;line-height:1.7}
   .prompts-editor{margin-top:12px;display:none;flex-direction:column;gap:16px}.prompts-editor.open{display:flex}
   .prompt-block label{font-size:13px;font-weight:500;color:var(--accent);margin-bottom:4px;display:block}
@@ -70,50 +76,41 @@
   @keyframes spin{to{transform:rotate(360deg)}}
   .hidden{display:none!important}
   #single-form,#batch-form{display:none}#single-form.active,#batch-form.active{display:block}
-  .env-badge{font-size:11px;color:var(--green);font-family:'JetBrains Mono',monospace;padding:4px 8px;background:#14532d;border-radius:4px}
-  .key-row{display:flex;gap:8px;align-items:center}
+  @media(max-width:600px){.header-top{flex-direction:column;align-items:flex-start;gap:8px}.lang-bar{gap:4px}.lang-btn{padding:6px 10px}.lang-flag{font-size:20px}}
 </style>
 </head>
 <body>
 <header class="app-header">
   <div class="header-inner">
-    <div class="header-left">
-      <h1>Restaurant Text Pipeline</h1>
-      <p class="header-sub">Generate → Quality Check → Fact Check</p>
+    <div class="header-top">
+      <div class="header-left">
+        <h1>Restaurant Text Pipeline</h1>
+        <p class="header-sub">Generate → Quality Check → Fact Check</p>
+      </div>
+      <select id="model" class="model-sel">
+        <option value="gpt-4.1">gpt-4.1</option>
+        <option value="gpt-4.1-mini">gpt-4.1-mini</option>
+        <option value="gpt-4.1-nano">gpt-4.1-nano</option>
+        <option value="gpt-4o">gpt-4o</option>
+        <option value="gpt-4o-mini">gpt-4o-mini</option>
+        <option value="gpt-5.2-chat-latest" selected>gpt-5.2-chat-latest</option>
+        <option value="gpt-5.2">gpt-5.2</option>
+      </select>
     </div>
-    <div class="lang-selector" id="lang-selector">
-      <button class="lang-btn" data-lang="it" onclick="setLang('it')">🇮🇹 IT</button>
-      <button class="lang-btn active" data-lang="uk" onclick="setLang('uk')">🇬🇧 UK</button>
-      <button class="lang-btn" data-lang="us" onclick="setLang('us')">🇺🇸 US</button>
-      <button class="lang-btn" data-lang="fr" onclick="setLang('fr')">🇫🇷 FR</button>
-      <button class="lang-btn" data-lang="es" onclick="setLang('es')">🇪🇸 ES</button>
+    <div class="lang-bar">
+      <button class="lang-btn" data-lang="it" onclick="setLang('it')"><span class="lang-flag">🇮🇹</span><span class="lang-label">Italiano</span></button>
+      <button class="lang-btn active" data-lang="uk" onclick="setLang('uk')"><span class="lang-flag">🇬🇧</span><span class="lang-label">UK English</span></button>
+      <button class="lang-btn" data-lang="us" onclick="setLang('us')"><span class="lang-flag">🇺🇸</span><span class="lang-label">US English</span></button>
+      <button class="lang-btn" data-lang="fr" onclick="setLang('fr')"><span class="lang-flag">🇫🇷</span><span class="lang-label">Français</span></button>
+      <button class="lang-btn" data-lang="es" onclick="setLang('es')"><span class="lang-flag">🇪🇸</span><span class="lang-label">Español</span></button>
     </div>
   </div>
 </header>
+
 <div class="main-content">
+  <!-- Prompts editor -->
   <section class="card">
-    <div class="config-row">
-      <div class="field" style="flex:2">
-        <label>OpenAI API Key</label>
-        <div class="key-row">
-          <input type="password" id="apiKey" class="input" placeholder="sk-..." />
-          <span id="env-badge" class="hidden env-badge"></span>
-        </div>
-      </div>
-      <div class="field" style="flex:1">
-        <label>Model</label>
-        <select id="model" class="input">
-          <option value="gpt-4.1">gpt-4.1</option>
-          <option value="gpt-4.1-mini">gpt-4.1-mini</option>
-          <option value="gpt-4.1-nano">gpt-4.1-nano</option>
-          <option value="gpt-4o">gpt-4o</option>
-          <option value="gpt-4o-mini">gpt-4o-mini</option>
-          <option value="gpt-5.2-chat-latest" selected>gpt-5.2-chat-latest</option>
-          <option value="gpt-5.2">gpt-5.2</option>
-        </select>
-      </div>
-    </div>
-    <button class="btn btn-ghost" style="margin-top:8px" onclick="togglePrompts()"><span id="prompt-toggle-label">▸ Edit Prompts</span></button>
+    <button class="btn btn-ghost" onclick="togglePrompts()"><span id="prompt-toggle-label">▸ Edit Prompts</span></button>
     <div id="prompts-editor" class="prompts-editor">
       <div class="prompt-block"><label>Step 1 — Generation</label><textarea id="prompt-gen" class="textarea prompt-textarea" rows="12"></textarea></div>
       <div class="prompt-block"><label>Step 2 — Quality Check</label><textarea id="prompt-qc" class="textarea prompt-textarea" rows="10"></textarea></div>
@@ -121,6 +118,8 @@
       <button class="btn btn-ghost btn-sm" onclick="loadPromptsForLang(currentLang)">Reset to defaults</button>
     </div>
   </section>
+
+  <!-- Input -->
   <section class="card">
     <div class="tab-row">
       <button class="tab-btn tab-active" id="tab-single" onclick="switchTab('single')">Single Restaurant</button>
@@ -151,11 +150,14 @@
       <span class="progress-text hidden" id="progress-text"></span>
     </div>
   </section>
+
+  <!-- Results -->
   <section id="results-section"><h2>Results</h2><div id="results-list"></div></section>
 </div>
+
 <script>
 // ═══════════════════════════════════════════════════════════════
-// ALL PROMPTS BY LANGUAGE
+// PROMPTS BY LANGUAGE
 // ═══════════════════════════════════════════════════════════════
 const LP={};
 
@@ -395,7 +397,6 @@ Paso a paso: compara afirmaciones vs hechos. Contradicciones factuales (no omisi
 Devuelve SOLO:
 {"_id":"{_id}","restaurant_name":"{name}","fact_check":{"cuisine_type":{"status":"correct or to_check","reason":"reasoning"}}}`};
 
-// US factCheck reuses UK
 LP.us.factCheck=LP.uk.factCheck;
 
 const SAMPLE_CSV=`_id,name,address,province,chef,michelin,description,cuisines
@@ -405,19 +406,12 @@ REST002,Saffron House,"45 High Street, Edinburgh EH1 1SR",Edinburgh,Maria Gonzal
 // ═══════════════════════════════════════════════════════════════
 // STATE
 // ═══════════════════════════════════════════════════════════════
-let currentLang='uk',currentTab='single',results=[],abortController=null,isProcessing=false,envApiKey=null;
+let currentLang='uk',currentTab='single',results=[],abortController=null,isProcessing=false;
 
 // ═══════════════════════════════════════════════════════════════
 // INIT
 // ═══════════════════════════════════════════════════════════════
-document.addEventListener('DOMContentLoaded',async()=>{
-  loadPromptsForLang('uk');
-  try{
-    const r=await fetch('/api/key');
-    if(r.ok){const d=await r.json();if(d.hasKey){envApiKey='__ENV__';document.getElementById('apiKey').placeholder='Using server env variable';document.getElementById('apiKey').disabled=true;const b=document.getElementById('env-badge');b.textContent='ENV VAR ✓';b.className='env-badge';b.classList.remove('hidden');}}
-  }catch(e){}
-  updateUI();
-});
+document.addEventListener('DOMContentLoaded',()=>{loadPromptsForLang('uk');updateUI();});
 
 function setLang(l){currentLang=l;document.querySelectorAll('.lang-btn').forEach(b=>b.classList.toggle('active',b.dataset.lang===l));loadPromptsForLang(l);}
 function loadPromptsForLang(l){const p=LP[l];if(!p)return;document.getElementById('prompt-gen').value=p.generation;document.getElementById('prompt-qc').value=p.qualityCheck;document.getElementById('prompt-fc').value=p.factCheck;}
@@ -432,20 +426,13 @@ function parseCSV(t){const rows=[];let c='',q=false,f=[];for(let i=0;i<t.length;
 function interpolate(tpl,d){return tpl.replace(/\{(\w+)\}/g,(m,k)=>d[k]!==undefined?d[k]:m);}
 
 // ═══════════════════════════════════════════════════════════════
-// OPENAI CALL
+// OPENAI — always via serverless proxy
 // ═══════════════════════════════════════════════════════════════
 async function callOpenAI(prompt,signal){
   const model=document.getElementById('model').value;
-  if(envApiKey){
-    const r=await fetch('/api/generate',{method:'POST',headers:{'Content-Type':'application/json'},signal,body:JSON.stringify({model,prompt})});
-    if(!r.ok){const e=await r.json().catch(()=>({}));throw new Error(e.error||`API error: ${r.status}`);}
-    return(await r.json()).content;
-  }else{
-    const k=document.getElementById('apiKey').value;
-    const r=await fetch('https://api.openai.com/v1/chat/completions',{method:'POST',headers:{'Content-Type':'application/json','Authorization':`Bearer ${k}`},signal,body:JSON.stringify({model,messages:[{role:'user',content:prompt}],temperature:0.7})});
-    if(!r.ok){const e=await r.json().catch(()=>({}));throw new Error(e.error?.message||`API error: ${r.status}`);}
-    return(await r.json()).choices[0].message.content;
-  }
+  const r=await fetch('/api/generate',{method:'POST',headers:{'Content-Type':'application/json'},signal,body:JSON.stringify({model,prompt})});
+  if(!r.ok){const e=await r.json().catch(()=>({}));throw new Error(e.error||`API error: ${r.status}`);}
+  return(await r.json()).content;
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -453,7 +440,6 @@ async function callOpenAI(prompt,signal){
 // ═══════════════════════════════════════════════════════════════
 function si(s){if(s==='running')return'<span class="spinner"></span>';if(s==='done')return'<span style="color:var(--green);font-size:18px">✓</span>';if(s==='error')return'<span style="color:var(--red);font-size:18px">✗</span>';return'<span style="color:var(--text2);font-size:18px">○</span>';}
 function esc(s){if(!s)return'';return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
-
 function renderResults(){
   const sec=document.getElementById('results-section'),list=document.getElementById('results-list');
   sec.classList.toggle('visible',results.length>0);
@@ -471,8 +457,7 @@ function renderResults(){
 }
 function toggleResult(i){results[i]._expanded=!results[i]._expanded;renderResults();}
 function updateUI(){
-  const hasKey=envApiKey||document.getElementById('apiKey').value;
-  document.getElementById('btn-run').disabled=isProcessing||!hasKey;
+  document.getElementById('btn-run').disabled=isProcessing;
   document.getElementById('btn-stop').classList.toggle('hidden',!isProcessing);
   document.getElementById('btn-export-json').classList.toggle('hidden',isProcessing||results.length===0);
   document.getElementById('btn-export-csv').classList.toggle('hidden',isProcessing||results.length===0);
@@ -485,7 +470,6 @@ function updateUI(){
 // PIPELINE
 // ═══════════════════════════════════════════════════════════════
 async function startPipeline(){
-  if(!(envApiKey||document.getElementById('apiKey').value))return;
   let items;
   if(currentTab==='single'){const flds=['_id','name','address','province','chef','michelin','description','cuisines'],o={};flds.forEach(f=>o[f]=document.getElementById('f-'+f)?.value||'');items=[o];}
   else items=parseCSV(document.getElementById('batch-csv').value);
@@ -525,7 +509,6 @@ function stopPipeline(){abortController?.abort();isProcessing=false;updateUI();}
 function exportJSON(){const d=results.map(r=>({_id:r._id,name:r.name,language:currentLang,generated_text:r.generatedText||'',checked_text:r.checkedText||'',fact_check:r.factCheckResult||null,error:r.error||null}));dl(new Blob([JSON.stringify(d,null,2)],{type:'application/json'}),`texts_${currentLang}_${new Date().toISOString().slice(0,10)}.json`);}
 function exportCSV(){const h=['_id','name','language','checked_text','fc_status','fc_reason','error'];const rows=results.map(r=>{const fc=r.factCheckResult?.fact_check?.cuisine_type;return[r._id,qt(r.name),currentLang,qt(r.checkedText||''),fc?.status||'',qt(fc?.reason||''),qt(r.error||'')].join(',');});dl(new Blob([[h.join(','),...rows].join('\n')],{type:'text/csv'}),`texts_${currentLang}_${new Date().toISOString().slice(0,10)}.csv`);}
 function qt(s){return`"${(s||'').replace(/"/g,'""')}"`;} function dl(b,n){const u=URL.createObjectURL(b),a=document.createElement('a');a.href=u;a.download=n;a.click();URL.revokeObjectURL(u);}
-document.getElementById('apiKey').addEventListener('input',updateUI);
 </script>
 </body>
 </html>
